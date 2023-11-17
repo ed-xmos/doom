@@ -2,7 +2,7 @@
 # compiled for. It either refers to an XN file in the source directories
 # or a valid argument for the --target option when compiling.
 
-TARGET = XK-1A
+TARGET = XCORE-AI-EXPLORER
 
 # The APP_NAME variable determines the name of the final .xe file. It should
 # not include the .xe postfix. If left blank the name will default to 
@@ -25,8 +25,9 @@ SOURCE_DIRS = src
 # If the variable XCC_MAP_FLAGS is set it overrides the flags passed to 
 # xcc for the final link (mapping) stage.
 
-XCC_FLAGS = -DUSE_OVERLAYS -Xmapper --no-overlay-data -foverlay=syscall -Xmapper --errdemote53 -Xmapper --image-size -Xmapper 0x1000000 -Xmapper --image-base -Xmapper 0x1000000 -Os -save-temps -g -report -Xmapper --map -Xmapper MAPFILE -D__XMOS__
+#XCC_FLAGS = -DUSE_OVERLAYS -Xmapper --no-overlay-data -foverlay=syscall -Xmapper --errdemote53 -Xmapper --image-size -Xmapper 0x1000000 -Xmapper --image-base -Xmapper 0x1000000 -Os -save-temps -g -report -Xmapper --map -Xmapper MAPFILE -D__XMOS__
 
+XCC_FLAGS = -Xmapper --image-size -Xmapper 0x1000000 -Xmapper --image-base -Xmapper 0x1000000 -Os -save-temps -g -report -Xmapper --map -Xmapper MAPFILE -D__XMOS__ -mcmodel=large
 XCC_FLAGS += -DPATH_MAX=64 -DVERSION=1 -DDOOMWADDIR="\"\""  -DNO_PREDEFINED_LUMPS=1
 
 XCC_XC_FLAGS = -fimplicit-overlay $(XCC_FLAGS)
