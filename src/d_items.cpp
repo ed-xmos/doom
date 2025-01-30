@@ -37,6 +37,7 @@
 #pragma implementation "d_items.h"
 #endif
 #include "d_items.h"
+#include "compiler.h"
 
 
 //
@@ -51,7 +52,7 @@
 //  atkstate, i.e. attack/fire/hit frame
 //  flashstate, muzzle flash
 //
-weaponinfo_t    weaponinfo[NUMWEAPONS] =
+EXTMEMD weaponinfo_t    weaponinfo[NUMWEAPONS] =
 {
   {
     // fist
