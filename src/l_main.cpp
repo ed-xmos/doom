@@ -202,7 +202,8 @@ unsigned int endoom_mode;
 
 OVERLAY static void PrintVer(void)
 {
-  printf("LsdlDoom v%s (http://jesshaas.com/lsdldoom/)\n",VERSION);
+  printf("LsdlDoom v%s (http://jesshaas.com/lsdldoom/)\n","XMOS");
+  // printf("LsdlDoom v%s (http://jesshaas.com/lsdldoom/)\n",VERSION);
 }
 
 /* I_EndDoom
@@ -340,6 +341,7 @@ uid_t stored_euid = -1;
 #endif
 extern "C" OVERLAY int main(int argc, char **argv)
 {
+
 #ifdef SECURE_UID
   /* First thing, revoke setuid status (if any) */
   stored_euid = geteuid();
@@ -357,6 +359,9 @@ extern "C" OVERLAY int main(int argc, char **argv)
 
   myargc = argc;
   myargv = (const char* const *)argv;
+  for(int i=0; i<argc; i++){
+    printf("%d: %s\n", i, argv[i]);
+  }
 
   /*
      killough 1/98:
@@ -376,6 +381,7 @@ extern "C" OVERLAY int main(int argc, char **argv)
 
   Z_Init();                  /* 1/18/98 killough: start up memory stuff first */
 
+#if 0
   atexit(I_Quit);
   signal(SIGSEGV, I_SignalHandler);
 #ifdef SIGPIPE
@@ -387,6 +393,7 @@ extern "C" OVERLAY int main(int argc, char **argv)
   signal(SIGILL,  I_SignalHandler);
   signal(SIGINT,  I_SignalHandler);  /* killough 3/6/98: allow CTRL-BRK during init */
   signal(SIGABRT, I_SignalHandler);
+#endif
 
   /* cphipps - call to video specific startup code */
   I_PreInitGraphics();

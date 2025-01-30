@@ -804,6 +804,7 @@ OVERLAY boolean WadFileStatus(char *filename,boolean *isdir)
 
 OVERLAY static char* FindWADFile(const char* wfname, const char* ext)
 {
+  printf("FindWADFile: %s %s\n", wfname, ext);
   int		i;
   /* Precalculate a length we will need in the loop */
   size_t	pl = strlen(wfname) + strlen(ext) + 4;

@@ -1,5 +1,6 @@
 #include <platform.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "lcd.h"
 #include "doom_display.h"
 
@@ -22,6 +23,8 @@ static void doom_task(int argc, char * unsafe * unsafe argv,
   client interface doom_display * movable p = &display;
   doom_display_set_pointer(move(p));
   int status = doom_main(argc, argv);
+
+  printf("BREXIT\n");
   exit(status);
 }
 
@@ -32,10 +35,11 @@ int main(int argc, char * unsafe * unsafe argv)
   interface uint_ptr_tx from_lcd;
   interface uint_ptr_rx from_buffer;
   interface doom_display display;
+
   par {
     doom_task(argc, argv, display);
     uint_ptr_buffer_tx_slave(to_buffer, to_lcd);
-    lcd_server(to_lcd, from_lcd, ports);
+    // lcd_server(to_lcd, from_lcd, ports);
     uint_ptr_buffer(from_lcd, from_buffer);
     doom_display(display, to_buffer, from_buffer);
   }
