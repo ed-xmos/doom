@@ -63,10 +63,10 @@ const byte *cr_orange;
 const byte *cr_yellow;
 
 //jff 4/24/98 initialize this at runtime
-const byte *colrngs[10];
+ const byte *colrngs[10];
 
 // Now where did these came from?
-const byte gammatable[5][256] = // CPhipps - const
+ const byte gammatable[5][256] = // CPhipps - const
 {
   {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,
    17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,
@@ -173,7 +173,7 @@ typedef struct {
 } crdef_t;
 
 // killough 5/2/98: table-driven approach
-static const crdef_t crdefs[] = {
+ static const crdef_t crdefs[] = {
   {"CRBRICK",  &cr_brick,   &colrngs[CR_BRICK ]},
   {"CRTAN",    &cr_tan,     &colrngs[CR_TAN   ]},
   {"CRGRAY",   &cr_gray,    &colrngs[CR_GRAY  ]},

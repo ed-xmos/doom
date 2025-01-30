@@ -158,7 +158,7 @@ struct cheat_s {
   uint_64_t code, mask;
 };
 
-static struct cheat_s cheat[] = {
+EXTMEMDI static struct cheat_s cheat[] = {
   {(const byte *)"idmus",      "Change music",      always,
    CHEAT_MUS,      -2},
 

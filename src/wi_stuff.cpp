@@ -173,7 +173,7 @@ typedef struct
 } anim_t;
 
 
-static point_t lnodes[NUMEPISODES][NUMMAPS] =
+ static point_t lnodes[NUMEPISODES][NUMMAPS] =
 {
   // Episode 0 World Map
   {
@@ -221,7 +221,7 @@ static point_t lnodes[NUMEPISODES][NUMMAPS] =
 // Using patches saves a lot of space,
 //  as they replace 320x200 full screen frames.
 //
-static anim_t epsd0animinfo[] =
+EXTMEMDI static anim_t epsd0animinfo[] =
 {
   { ANIM_ALWAYS, TICRATE/3, 3, { 224, 104 } },
   { ANIM_ALWAYS, TICRATE/3, 3, { 184, 160 } },
@@ -235,7 +235,7 @@ static anim_t epsd0animinfo[] =
   { ANIM_ALWAYS, TICRATE/3, 3, { 64, 24 } }
 };
 
-static anim_t epsd1animinfo[] =
+EXTMEMDI static anim_t epsd1animinfo[] =
 {
   { ANIM_LEVEL,  TICRATE/3, 1, { 128, 136 }, 1 },
   { ANIM_LEVEL,  TICRATE/3, 1, { 128, 136 }, 2 },
@@ -248,7 +248,7 @@ static anim_t epsd1animinfo[] =
   { ANIM_LEVEL,  TICRATE/3, 1, { 128, 136 }, 8 }
 };
 
-static anim_t epsd2animinfo[] =
+EXTMEMDI static anim_t epsd2animinfo[] =
 {
   { ANIM_ALWAYS, TICRATE/3, 3, { 104, 168 } },
   { ANIM_ALWAYS, TICRATE/3, 3, { 40, 136 } },

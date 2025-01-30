@@ -120,11 +120,11 @@ static messageroutinefunc_t messageRoutine;
 
 // we are going to be entering a savegame string
 
-static int saveStringEnter;
-static int saveSlot;        // which slot to save in
-static int saveCharIndex;   // which char we're editing
+EXTMEMD static int saveStringEnter;
+EXTMEMD static int saveSlot;        // which slot to save in
+EXTMEMD static int saveCharIndex;   // which char we're editing
 // old save description before edit
-static char saveOldString[SAVESTRINGSIZE];
+EXTMEMD static char saveOldString[SAVESTRINGSIZE];
 
 boolean inhelpscreens; // indicates we are in or just left a help screen
 
@@ -133,9 +133,9 @@ boolean menuactive;    // The menus are up
 #define SKULLXOFF  -32
 #define LINEHEIGHT  16
 
-static char savegamestrings[10][SAVESTRINGSIZE];
+EXTMEMD static char savegamestrings[10][SAVESTRINGSIZE];
 
-static char endstring[160];
+EXTMEMD static char endstring[160];
 
 // CPhipps - unused: extern boolean sendpause;
 extern skill_t startskill; //jff 3/24/98 make startskill from D_MAIN accessible
@@ -233,7 +233,7 @@ static short whichSkull;       // which skull to draw (he blinks)
 // graphic name of skulls
 // warning: initializer-string for array of chars is too long
 
-static char skullName[2][/*8*/9] = {"M_SKULL1","M_SKULL2"};
+EXTMEMDI static char skullName[2][/*8*/9] = {"M_SKULL1","M_SKULL2"};
 
 static menu_t* currentMenu; // current menudef
 
@@ -411,7 +411,7 @@ enum main_e
 // associated with the item.
 //
 
-static menuitem_t MainMenu[]=
+EXTMEMDI static menuitem_t MainMenu[]=
 {
   {1,"M_NGAME", M_NEWGAME, 'n'},
   {1,"M_LOADG", M_LOADGAME,'l'},
@@ -465,17 +465,17 @@ enum read_e2
 
 // The definitions of the Read This! screens
 
-static menuitem_t ReadMenu1[] =
+EXTMEMDI static menuitem_t ReadMenu1[] =
 {
   {1,"",M_READTHIS2,0}
 };
 
-static menuitem_t ReadMenu2[]=
+EXTMEMDI static menuitem_t ReadMenu2[]=
 {
   {1,"",M_FINISHREADTHIS,0}
 };
 
-static menu_t ReadDef1 =
+EXTMEMDI static menu_t ReadDef1 =
 {
   read1_end,
   &MainDef,
@@ -486,7 +486,7 @@ static menu_t ReadDef1 =
   0
 };
 
-static menu_t ReadDef2 =
+EXTMEMDI static menu_t ReadDef2 =
 {
   read2_end,
   &ReadDef1,

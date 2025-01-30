@@ -57,7 +57,7 @@ void       **lumpcache;      // killough
 #ifdef TIMEDIAG
 static int *locktic; // cph
 
-static void W_ReportLocks(void)
+OVERLAY static void W_ReportLocks(void)
 {
   int i;
   lprintf(LO_DEBUG, "W_ReportLocks:\nLump     Size   Locks  Tics\n");

@@ -1,6 +1,7 @@
 // Just enough to avoid undefined references.
 
 #include "sounds.h"
+#include "compiler.h"
 #include "doomtype.h"
 #include "w_wad.h"
 #include <stddef.h>
@@ -19,8 +20,8 @@ unsigned char*	channelsend[NUM_CHANNELS];
 int		channelstart[NUM_CHANNELS];
 int 		channelhandles[NUM_CHANNELS];
 int		channelids[NUM_CHANNELS];
-int		steptable[256];
-int		vol_lookup[128*256];
+EXTMEMD int		steptable[256];
+EXTMEMD int		vol_lookup[128*256];
 int*		channelleftvol_lookup[NUM_CHANNELS];
 int*		channelrightvol_lookup[NUM_CHANNELS];
 

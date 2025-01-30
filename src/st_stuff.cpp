@@ -244,81 +244,81 @@
 // killough 2/8/98: weapon info position macros UNUSED, removed here
 
 // main player in game
-static player_t *plyr;
+EXTMEMD static player_t *plyr;
 
 // ST_Start() has just been called
-static boolean st_firsttime;
+EXTMEMD static boolean st_firsttime;
 
 // used to execute ST_Init() only once
-static int veryfirsttime = 1;
+EXTMEMDI static int veryfirsttime = 1;
 
 // CPhipps - no longer do direct PLAYPAL handling here
 
 // used for timing
-static unsigned int st_clock;
+EXTMEMD static unsigned int st_clock;
 
 // used for making messages go away
-static int st_msgcounter=0;
+EXTMEMDI static int st_msgcounter=0;
 
 // used when in chat
-static st_chatstateenum_t st_chatstate;
+EXTMEMD static st_chatstateenum_t st_chatstate;
 
 // whether in automap or first-person
-static st_stateenum_t st_gamestate;
+EXTMEMD static st_stateenum_t st_gamestate;
 
 // whether left-side main status bar is active
-static boolean st_statusbaron;
+EXTMEMD static boolean st_statusbaron;
 
 // whether status bar chat is active
-static boolean st_chat;
+EXTMEMD static boolean st_chat;
 
 // value of st_chat before message popped up
-static boolean st_oldchat;
+EXTMEMD static boolean st_oldchat;
 
 // whether chat window has the cursor on
-static boolean st_cursoron;
+EXTMEMD static boolean st_cursoron;
 
 // !deathmatch
-static boolean st_notdeathmatch;
+EXTMEMD static boolean st_notdeathmatch;
 
 // !deathmatch && st_statusbaron
-static boolean st_armson;
+EXTMEMD static boolean st_armson;
 
 // !deathmatch
-static boolean st_fragson;
+EXTMEMD static boolean st_fragson;
 
 // main bar left
 // CPhipps - convert to a bitmap
-static byte *sbar;
-static unsigned short sbar_width, sbar_height;
+EXTMEMD static byte *sbar;
+EXTMEMD static unsigned short sbar_width, sbar_height;
 
 // 0-9, tall numbers
-static const patch_t *tallnum[10];
+EXTMEMD static const patch_t *tallnum[10];
 
 // tall % sign
-static const patch_t *tallpercent;
+EXTMEMD static const patch_t *tallpercent;
 
 // 0-9, short, yellow (,different!) numbers
-static const patch_t *shortnum[10];
+EXTMEMD static const patch_t *shortnum[10];
 
 // 3 key-cards, 3 skulls, 3 card/skull combos
 // jff 2/24/98 extend number of patches by three skull/card combos
-static const patch_t *keys[NUMCARDS+3];
+EXTMEMD static const patch_t *keys[NUMCARDS+3];
 
 // face status patches
-static const patch_t *faces[ST_NUMFACES];
+EXTMEMD static const patch_t *faces[ST_NUMFACES];
 
 // face background
-static const patch_t *faceback; // CPhipps - single background, translated for different players
+EXTMEMD static const patch_t *faceback; // CPhipps - single background, translated for different players
 
  // main bar right
-static const patch_t *armsbg;
+EXTMEMD static const patch_t *armsbg;
 
 // weapon ownership patches
-static const patch_t *arms[6][2];
+EXTMEMD static const patch_t *arms[6][2];
 
 // ready-weapon widget
-static st_number_t w_ready;
+EXTMEMD static st_number_t w_ready;
 
 //jff 2/16/98 status color change levels
 int ammo_red;      // ammo percent less than which status is red
@@ -331,52 +331,52 @@ int armor_yellow;  // armor amount less than which status is yellow
 int armor_green;   // armor amount above is blue, below is green
 
  // in deathmatch only, summary of frags stats
-static st_number_t w_frags;
+EXTMEMD static st_number_t w_frags;
 
 // health widget
-static st_percent_t w_health;
+EXTMEMD static st_percent_t w_health;
 
 // arms background
-static st_binicon_t  w_armsbg;
+EXTMEMD static st_binicon_t  w_armsbg;
 
 // weapon ownership widgets
-static st_multicon_t w_arms[6];
+EXTMEMD static st_multicon_t w_arms[6];
 
 // face status widget
-static st_multicon_t w_faces;
+EXTMEMD static st_multicon_t w_faces;
 
 // keycard widgets
-static st_multicon_t w_keyboxes[3];
+EXTMEMD static st_multicon_t w_keyboxes[3];
 
 // armor widget
-static st_percent_t  w_armor;
+EXTMEMD static st_percent_t  w_armor;
 
 // ammo widgets
-static st_number_t   w_ammo[4];
+EXTMEMD static st_number_t   w_ammo[4];
 
 // max ammo widgets
-static st_number_t   w_maxammo[4];
+EXTMEMD static st_number_t   w_maxammo[4];
 
  // number of frags so far in deathmatch
-static int      st_fragscount;
+EXTMEMD static int      st_fragscount;
 
 // used to use appopriately pained face
-static int      st_oldhealth = -1;
+EXTMEMDI static int      st_oldhealth = -1;
 
 // used for evil grin
-static boolean  oldweaponsowned[NUMWEAPONS];
+EXTMEMD static boolean  oldweaponsowned[NUMWEAPONS];
 
  // count until face changes
-static int      st_facecount = 0;
+EXTMEMDI static int      st_facecount = 0;
 
 // current face index, used by w_faces
-static int      st_faceindex = 0;
+EXTMEMDI static int      st_faceindex = 0;
 
 // holds key-type for each key box on bar
-static int      keyboxes[3];
+EXTMEMD static int      keyboxes[3];
 
 // a random number per tick
-static int      st_randomnumber;
+EXTMEMD static int      st_randomnumber;
 
 extern char     *mapnames[];
 

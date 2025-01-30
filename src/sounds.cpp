@@ -34,12 +34,13 @@
 
 #include "doomtype.h"
 #include "sounds.h"
+#include "compiler.h"
 
 //
 // Information about all the music
 //
 
-musicinfo_t S_music[] = {
+EXTMEMDI musicinfo_t S_music[] = {
   { 0 },
   { "e1m1", 0 },
   { "e1m2", 0 },

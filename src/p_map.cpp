@@ -70,7 +70,7 @@ fixed_t   tmdropoffz; // dropoff on other side of line you're crossing
 // keep track of the line that lowers the ceiling,
 // so missiles don't explode against sky hack walls
 
-line_t    *ceilingline;
+EXTMEMD line_t    *ceilingline;
 
 // keep track of special lines as they are hit,
 // but don't process them until the move is proven valid
