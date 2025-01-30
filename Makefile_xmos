@@ -29,7 +29,7 @@ SOURCE_DIRS = src
 
 XCC_FLAGS = -Xmapper --errdemote53  -Os -save-temps -g -report -Xmapper --map -Xmapper MAPFILE -D__XMOS__ -mcmodel=large
 XCC_FLAGS += -DPATH_MAX=64 -DVERSION=1 -DDOOMWADDIR="\"\""  -DNO_PREDEFINED_LUMPS=1
-XCC_FLAGS += -DUSE_EXTMEM=1 -Wno-unknown-pragmas -fcmdline-buffer-bytes=1024
+XCC_FLAGS += -DUSE_EXTMEM=1 -Wno-unknown-pragmas -fcmdline-buffer-bytes=1024 -DEBUG_PRINT_SUPPORT=1
 
 #XCC_XC_FLAGS = -fimplicit-overlay $(XCC_FLAGS)
 XCC_XC_FLAGS = $(XCC_FLAGS)

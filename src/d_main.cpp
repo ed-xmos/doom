@@ -810,6 +810,7 @@ OVERLAY static char* FindWADFile(const char* wfname, const char* ext)
   size_t	pl = strlen(wfname) + strlen(ext) + 4;
 
   for (i=0; i<10; i++) {
+    printf("opt: %d\n", i);
     char	*	p;
     const char	*	d = NULL;
     const char	*	s = NULL;
@@ -848,18 +849,26 @@ OVERLAY static char* FindWADFile(const char* wfname, const char* ext)
 #endif
     }
 
+    printf("malloc\n");
     p = (char *)malloc((d ? strlen(d) : 0) + (s ? strlen(s) : 0) + pl);
     sprintf(p, "%s%s%s%s%s", d ? d : "", (d && !HasTrailingSlash(d)) ? "/" : "",
                              s ? s : "", (s && !HasTrailingSlash(s)) ? "/" : "",
                              wfname);
+    printf("strcat\n");
     if (!I_FileExists(p))
       strcat(p, ext);
+    
+    printf("exists\n");
     if (I_FileExists(p)) {
+      printf("exists2\n");
       lprintf(LO_INFO, " found %s\n", p);
+      printf("exists3\n");
       return p;
     }
+    printf("free\n");
     free(p);
   }
+  printf("DONE: FindWADFile\n");
   return NULL;
 }
 
