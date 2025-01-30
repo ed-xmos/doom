@@ -47,7 +47,7 @@ int I_IsATerminal(int fd)
 
 #define HEAP_MB 6
 
-static byte heap[HEAP_MB*1024*1024];
+EXTMEMD static byte heap[HEAP_MB*1024*1024];
 
 byte *I_ZoneBase(int *size)
 {
