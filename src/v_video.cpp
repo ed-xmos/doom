@@ -555,6 +555,11 @@ OVERLAY void V_DrawNamePatch(int x, int y, int scrn, const char *name,
   V_DrawNumPatch(x, y, scrn, W_GetNumForName(name), trans, flags);
 }
 
+void V_DrawNumPatch_2(int x, int y, int scrn, int lump,
+                            const byte *trans, int flags)
+{
+    V_DrawNumPatch(x, y, scrn, lump, trans, flags);
+}
 // CPhipps -
 // V_PatchToBlock
 //

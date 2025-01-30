@@ -675,7 +675,7 @@ OVERLAY void R_FillBackScreen (void)
     patch = W_GetNumForName("brdr_b");
     
     for (x=0; x<scaledviewwidth; x+=8)
-      V_DrawNumPatch(viewwindowx+x, viewwindowy+viewheight, 1, patch, NULL, VPT_NONE);
+      V_DrawNumPatch_2(viewwindowx+x, viewwindowy+viewheight, 1, patch, NULL, VPT_NONE);
   }
 // proff 08/17/98: Changed for high-res
 // proff/nicolas 09/20/98: Moved down for high-res
@@ -684,15 +684,15 @@ OVERLAY void R_FillBackScreen (void)
 
   patch = W_GetNumForName("brdr_t");
   for (x=0; x<scaledviewwidth; x+=8)
-    V_DrawNumPatch(viewwindowx+x, viewwindowy-8, 1, patch, NULL, VPT_NONE);
+    V_DrawNumPatch_2(viewwindowx+x, viewwindowy-8, 1, patch, NULL, VPT_NONE);
 
   patch = W_GetNumForName("brdr_l");
   for (y=0; y<viewheight; y+=8)
-    V_DrawNumPatch(viewwindowx-8, viewwindowy+y, 1, patch, NULL, VPT_NONE);
+    V_DrawNumPatch_2(viewwindowx-8, viewwindowy+y, 1, patch, NULL, VPT_NONE);
 
   patch = W_GetNumForName("brdr_r");
   for (y=0; y<viewheight; y+=8)
-    V_DrawNumPatch(viewwindowx+scaledviewwidth, viewwindowy+y, 
+    V_DrawNumPatch_2(viewwindowx+scaledviewwidth, viewwindowy+y, 
 		   1, patch, NULL, VPT_NONE);
 
   // Draw beveled edge. 

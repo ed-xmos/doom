@@ -39,7 +39,7 @@
 
 /* Endianess handling. */
 
-#ifdef __XS1B__
+#ifdef __XS3A__
 #define IS_BIG_ENDIAN 0
 #else
 #include "SDL.h"

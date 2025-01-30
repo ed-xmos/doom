@@ -580,7 +580,7 @@ OVERLAY void F_CastDrawer (void)
   flip = (boolean)sprframe->flip[0];
 
   // CPhipps - patch drawing updated
-  V_DrawNumPatch(160, 170, 0, lump+firstspritelump, NULL, 
+  V_DrawNumPatch_2(160, 170, 0, lump+firstspritelump, NULL, 
 		 (enum patch_translation_e)(VPT_STRETCH | (flip ? VPT_FLIP : 0)));
 }
 

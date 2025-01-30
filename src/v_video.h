@@ -120,6 +120,11 @@ void V_DrawMemPatch(int x, int y, int scrn, const patch_t *patch,
 // V_DrawNumPatch - Draws the patch from lump num
 void V_DrawNumPatch(int x, int y, int scrn, int lump, 
 		    const byte *trans, int flags);
+
+
+void V_DrawNumPatch_2(int x, int y, int scrn, int lump,
+                            const byte *trans, int flags);
+
 // V_DrawNamePatch - Draws the patch from lump "name"
 void V_DrawNamePatch(int x, int y, int scrn, const char *name, 
 		     const byte *trans, int flags);
