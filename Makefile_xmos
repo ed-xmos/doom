@@ -14,8 +14,8 @@ APP_NAME =
 # In this application the extra include files may be found in a target
 # specific directory for XMOS development boards
 
-INCLUDE_DIRS = src
-SOURCE_DIRS = src
+INCLUDE_DIRS = src src/xcore
+SOURCE_DIRS = src src/xcore
 
 # The flags passed to xcc when building the application
 # You can also set the following to override flags for a particular language:
@@ -29,12 +29,12 @@ SOURCE_DIRS = src
 
 XCC_FLAGS = -Xmapper --errdemote53  -Os -save-temps -g -report -Xmapper --map -Xmapper MAPFILE -D__XMOS__ -mcmodel=large
 XCC_FLAGS += -DPATH_MAX=64 -DVERSION=1 -DDOOMWADDIR="\"\""  -DNO_PREDEFINED_LUMPS=1
-XCC_FLAGS += -DUSE_EXTMEM=1 -Wno-unknown-pragmas -fcmdline-buffer-bytes=1024 -DEBUG_PRINT_SUPPORT=1
+XCC_FLAGS += -DUSE_EXTMEM=1 -Wno-unknown-pragmas -fcmdline-buffer-bytes=1024 -DDEBUG_PRINT_SUPPORT=1
 
 #XCC_XC_FLAGS = -fimplicit-overlay $(XCC_FLAGS)
-XCC_XC_FLAGS = $(XCC_FLAGS)
+XCC_XC_FLAGS = $(XCC_FLAGS) -I src/xcore
 
-XCC_CPP_FLAGS = -fno-rtti -fno-exceptions $(XCC_FLAGS)
+XCC_CPP_FLAGS = -fno-rtti -fno-exceptions $(XCC_FLAGS) -DDEBUG_PRINT_SUPPORT=1
 
 EXCLUDE_FILES += l_system.cpp l_video_sdl.cpp l_udp.cpp l_sound_sdl.cpp d_server.cpp
 

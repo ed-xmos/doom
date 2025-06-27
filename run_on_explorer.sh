@@ -1,2 +1,2 @@
- xmake -j -f Makefile_xmos
- xrun --xscope --args bin/doom.xe -iwad data/boomlump || xrun --dump-state bin/doom.xe 
+ xmake -j -f Makefile_xmos && xrun --xscope --args bin/doom.xe -iwad data/Doom1.WAD -file data/boomlump.wad -width 320 -height 200  --screenblocks 10 -noload -playdemo 
+ #|| xrun --dump-state bin/doom.xe \

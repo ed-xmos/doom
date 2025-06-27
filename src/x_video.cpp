@@ -114,6 +114,7 @@ void I_PreInitGraphics(void)
 
 void I_SetRes(unsigned int width, unsigned int height)
 {
+  printf("width %u height %u\n", width, height);
   if (width != SCREEN_WIDTH || height != SCREEN_HEIGHT)
     __builtin_trap();
 }

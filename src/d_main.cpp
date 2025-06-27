@@ -804,6 +804,7 @@ OVERLAY boolean WadFileStatus(char *filename,boolean *isdir)
 
 OVERLAY static char* FindWADFile(const char* wfname, const char* ext)
 {
+  printf("%p %p\n", wfname, ext);
   printf("FindWADFile: %s %s\n", wfname, ext);
   int		i;
   /* Precalculate a length we will need in the loop */
@@ -849,23 +850,17 @@ OVERLAY static char* FindWADFile(const char* wfname, const char* ext)
 #endif
     }
 
-    printf("malloc\n");
     p = (char *)malloc((d ? strlen(d) : 0) + (s ? strlen(s) : 0) + pl);
     sprintf(p, "%s%s%s%s%s", d ? d : "", (d && !HasTrailingSlash(d)) ? "/" : "",
                              s ? s : "", (s && !HasTrailingSlash(s)) ? "/" : "",
                              wfname);
-    printf("strcat\n");
     if (!I_FileExists(p))
       strcat(p, ext);
     
-    printf("exists\n");
     if (I_FileExists(p)) {
-      printf("exists2\n");
       lprintf(LO_INFO, " found %s\n", p);
-      printf("exists3\n");
       return p;
     }
-    printf("free\n");
     free(p);
   }
   printf("DONE: FindWADFile\n");
@@ -891,6 +886,7 @@ OVERLAY static char *FindIWADFile(void)
     for (i=0; !iwad && i<nstandard_iwads; i++)
       iwad = FindWADFile(standard_iwads[i], ".wad");
   }
+  printf("Post FindIWADFile\n");
   return iwad;
 }
 
@@ -952,6 +948,7 @@ OVERLAY void IdentifyVersion (void)
   // locate the IWAD and determine game mode from it
 
   iwad = FindIWADFile();
+
 
   if (iwad && *iwad)
   {
@@ -1498,7 +1495,9 @@ OVERLAY void D_DoomMainSetup(void)
       }
       // Filename is now stored as a zero terminated string
 //	    folder = D_DoomExeDir();
+      printf("PreWAD\n");
       fpath = FindWADFile(fname, ".wad");
+      printf("PostWAD\n");
       if (!fpath)
         lprintf(LO_WARN, "Failed to autoload %s\n", fname);
       else {
