@@ -375,6 +375,9 @@ OVERLAY void R_ExecuteSetViewSize (void)
 {
   int i;
 
+  setblocks = 10; // HHHAACCCKK Ed remove me
+
+
   setsizeneeded = false;
 
   if (setblocks == 11)
@@ -411,7 +414,7 @@ OVERLAY void R_ExecuteSetViewSize (void)
     
   // psprite scales
 // proff 08/17/98: Changed for high-res
-  printf("setblocks: %d viewwidth: %d, viewheight: %d\n", setblocks, screenviewwidth, viewheight);
+  printf("setblocks: %d viewwidth: %d, viewheight: %d\n", setblocks, viewwidth, viewheight);
   pspritescale = FRACUNIT*viewwidth/320;
   pspriteiscale = FRACUNIT*320/viewwidth;
 // proff 11/06/98: Added for high-res
