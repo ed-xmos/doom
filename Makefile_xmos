@@ -41,6 +41,8 @@ EXCLUDE_FILES += l_system.cpp l_video_sdl.cpp l_udp.cpp l_sound_sdl.cpp d_server
 
 # The USED_MODULES variable lists other module used by the application. 
 
+USED_MODULES = lib_xud
+
 #=============================================================================
 # The following part of the Makefile includes the common build infrastructure
 # for compiling XMOS applications. You should not need to edit below here.

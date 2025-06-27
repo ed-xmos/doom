@@ -14,6 +14,9 @@
 //   XS1_CLKBLK_1
 // };
 
+// char *fixed_args[] = {"bin/doom.xe", "-iwad", "data/Doom1.WAD", "-file",  "data/boomlump.wad",  "-width",  "320",  "-height",  "200",  "-noload",  "-playdemo"};
+// int fixed_args_count = 11;
+
 extern "C" {
 int doom_main(int argc, char **argv);
 }
@@ -24,6 +27,10 @@ static void doom_task(int argc, char * unsafe * unsafe argv,
   client interface doom_display * movable p = &display;
   doom_display_set_pointer(move(p));
   int status = doom_main(argc, argv);
+
+  // int status = 0;
+  // puts(fixed_args[1]);
+  // unsafe{status = doom_main(fixed_args_count, (char * unsafe * unsafe)fixed_args);}
 
   printf("BREXIT\n");
   exit(status);
@@ -42,6 +49,7 @@ static void doom_task(int argc, char * unsafe * unsafe argv,
 //   }
 // }
 
+
 int main(int argc, char * unsafe * unsafe argv)
 {
   interface uint_ptr_tx_slave to_buffer;
@@ -55,9 +63,10 @@ int main(int argc, char * unsafe * unsafe argv)
   par {
     // on tile[0]:
     par {
-      doom_task(argc, argv, display);
+      // doom_task(argc, argv, display);
       uint_ptr_buffer_tx_slave(to_buffer, to_lcd);
       usbv_server(to_lcd, from_lcd, c_led);
+      usb_video_main();
       uint_ptr_buffer(from_lcd, from_buffer);
       doom_display(display, to_buffer, from_buffer);
     }
