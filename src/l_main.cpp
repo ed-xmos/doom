@@ -337,9 +337,11 @@ uid_t stored_euid = -1;
 #endif
 
 #ifdef __XMOS__
+char *argv[] = {"bin/doom.xe", "-iwad", "data/Doom1.WAD", "-file",  "data/boomlump.wad",  "-width",  "320",  "-height",  "200",  "-noload",  "-playdemo"};
+int argc = 11;
 #define main doom_main
 #endif
-extern "C" OVERLAY int main(int argc, char **argv)
+extern "C" OVERLAY int main(int xargc, char **xargv)
 {
 
 #ifdef SECURE_UID
@@ -357,10 +359,10 @@ extern "C" OVERLAY int main(int argc, char **argv)
   putchar('\n');
   PrintVer();
 
-  myargc = argc;
   myargv = (const char* const *)argv;
+  myargc = argc;
   for(int i=0; i<argc; i++){
-    printf("%d: %s\n", i, argv[i]);
+    printf("%d: %s (%p)\n", i, argv[i], argv[i]);
   }
 
   /*

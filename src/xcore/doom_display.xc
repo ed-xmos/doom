@@ -6,6 +6,11 @@
 #include <stdint.h>
 #include <stdio.h>
 
+int go_usb = 0;
+unsafe{
+  volatile int * unsafe p_go_usb = &go_usb;
+}
+
 #define HORIZONTAL_OFFSET ((LCD_WIDTH - SCREEN_WIDTH) / 2)
 #define VERTICAL_OFFSET ((LCD_HEIGHT - SCREEN_HEIGHT) / 2)
 
@@ -41,9 +46,12 @@ void doom_display(server interface doom_display screen,
   while (1) {
     select {
     case screen.get_palette_() -> uint16_t * unsafe p:
+      printf("pre get_palette_\n");
+
       unsafe {
         p = (uint16_t * unsafe)palette;
       }
+      printf("post get_palette_\n");
       break;
     case screen.get_frame_() -> uint8_t * unsafe p:
       unsafe {
@@ -83,7 +91,9 @@ void doom_display(server interface doom_display screen,
 
 extends client interface doom_display : {
   void set_palette(client interface doom_display self, const uint16_t new_palette[256]) {
+    printf("pre palette %p\n", self.get_palette_());
     memcpy(self.get_palette_(), new_palette, sizeof(new_palette));
+    printf("post palette\n");
   }
   void write(client interface doom_display self, const uint8_t frame[SCREEN_WIDTH * SCREEN_HEIGHT]) {
     select { case self.vblank(): break; }
@@ -105,19 +115,23 @@ void doom_display_set_pointer(client interface doom_display * movable display)
 
 void doom_display_set_palette(const uint16_t new_palette[256])
 {
-  printf("doom_display_set_palette\n");
-  display_ptr->set_palette(new_palette);
+  // printf("doom_display_set_palette\n");
+  // display_ptr->set_palette(new_palette);
   printf("doom_display_set_palette\n");
 }
 
 void doom_display_write(const uint8_t frame[SCREEN_WIDTH * SCREEN_HEIGHT])
 {
+  // printf("doom_display_write\n");
+  unsafe{*p_go_usb = 1;}
+  // display_ptr->write(frame);
   printf("doom_display_write\n");
-  display_ptr->write(frame);
 }
 
 void doom_display_read(uint8_t frame[SCREEN_WIDTH * SCREEN_HEIGHT])
 {
+  // printf("doom_display_read\n");
+  // display_ptr->read(frame);
   printf("doom_display_read\n");
-  display_ptr->read(frame);
+
 }

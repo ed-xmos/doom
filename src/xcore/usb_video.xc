@@ -7,8 +7,8 @@ output_row(unsigned short row[LCD_ROW_WORDS * 2],
            unsigned &time)
 {
   static int r = 0; 
-  if(++r == 200){
-    printf("Display frame\n");
+  if(++r == 200 * 100){
+    printf("Display 100 frames\n");
     r = 0;
   }
 }
@@ -337,7 +337,7 @@ void VideoEndpointsHandler(chanend c_epint_in, chanend c_episo_in)
     unsigned int gVideoBuffer[PAYLOAD_SIZE / sizeof(int)];
     uint8_t *payload_header_ptr = (uint8_t*)&gVideoBuffer[0];
     unsigned int *payload_data_ptr = &gVideoBuffer[HEADER_BYTES/sizeof(int)];
-    unsigned int *img_ptr = (unsigned int *)img_yuv;
+    // unsigned int *img_ptr = (unsigned int *)img_yuv;
     unsigned int line_count = 0;
     int frame = 0x0C;
     int pts, tmrValue = 0;
@@ -382,15 +382,15 @@ void VideoEndpointsHandler(chanend c_epint_in, chanend c_episo_in)
             increment = line_size;
         }
 
-        // Copy data from middle_of_line to the end of the line
-        for (unsigned i = 0; i < line_size - increment; i++) {
-            payload_data_ptr[i] = img_ptr[middle_of_line++];
-        }
+        // // Copy data from middle_of_line to the end of the line
+        // for (unsigned i = 0; i < line_size - increment; i++) {
+        //     payload_data_ptr[i] = img_ptr[middle_of_line++];
+        // }
 
-        // Copy data from start_of_line to increment
-        for (unsigned j = 0; j < increment; j++) {
-            payload_data_ptr[line_size - increment + j] = img_ptr[start_of_line++];
-        }
+        // // Copy data from start_of_line to increment
+        // for (unsigned j = 0; j < increment; j++) {
+        //     payload_data_ptr[line_size - increment + j] = img_ptr[start_of_line++];
+        // }
 
         line_count += 1;
         if(line_count >= HEIGHT)
@@ -424,9 +424,15 @@ void VideoEndpointsHandler(chanend c_epint_in, chanend c_episo_in)
 XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
 XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_INT, XUD_EPTYPE_ISO};
 
+extern volatile int * unsafe p_go_usb;
+
 void usb_video_main(void) {
 
     chan c_ep_out[EP_COUNT_OUT], c_ep_in[EP_COUNT_IN];
+
+    // unsafe{while(*p_go_usb == 0);}
+    // delay_seconds(40);
+    printf("GO USB!\n");
 
     /* 'Par' statement to run the following tasks in parallel */
     par
@@ -439,5 +445,4 @@ void usb_video_main(void) {
 
         VideoEndpointsHandler(c_ep_in[1], c_ep_in[2]);
     }
-    return 0;
 }

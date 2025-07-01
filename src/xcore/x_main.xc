@@ -14,9 +14,6 @@
 //   XS1_CLKBLK_1
 // };
 
-// char *fixed_args[] = {"bin/doom.xe", "-iwad", "data/Doom1.WAD", "-file",  "data/boomlump.wad",  "-width",  "320",  "-height",  "200",  "-noload",  "-playdemo"};
-// int fixed_args_count = 11;
-
 extern "C" {
 int doom_main(int argc, char **argv);
 }
@@ -28,29 +25,42 @@ static void doom_task(int argc, char * unsafe * unsafe argv,
   doom_display_set_pointer(move(p));
   int status = doom_main(argc, argv);
 
-  // int status = 0;
-  // puts(fixed_args[1]);
-  // unsafe{status = doom_main(fixed_args_count, (char * unsafe * unsafe)fixed_args);}
-
   printf("BREXIT\n");
   exit(status);
 }
 
-// on tile[1]: out port p_leds = XS1_PORT_32A;
+static void doom_task_fixed_args(client interface doom_display display)
+{
+  client interface doom_display * movable p = &display;
+  doom_display_set_pointer(move(p));
+  
+  unsafe{
+    int xargc; 
+    const char * unsafe * unsafe xargv = {""};
+    int status = doom_main(xargc, xargv);
 
-// void led_task(chanend c_led){
-//   int cmd;
-//   while(1){
-//     select{
-//       case c_led :> cmd:
-//         p_leds <: cmd;
-//         break;
-//     }
-//   }
-// }
+    printf("BREXIT\n");
+    exit(status);
+  }
+}
+
+on tile[1]: out port p_leds = XS1_PORT_32A;
+
+void led_task(chanend c_led){
+  int cmd;
+  while(1){
+    select{
+      case c_led :> cmd:
+        p_leds <: cmd;
+        break;
+    }
+  }
+}
 
 
-int main(int argc, char * unsafe * unsafe argv)
+
+int main(void)
+// int main(int argc, char * unsafe * unsafe argv)
 {
   interface uint_ptr_tx_slave to_buffer;
   interface uint_ptr_rx to_lcd;
@@ -61,19 +71,20 @@ int main(int argc, char * unsafe * unsafe argv)
   chan c_led;
 
   par {
-    // on tile[0]:
+    on tile[0]:
     par {
       // doom_task(argc, argv, display);
+      doom_task_fixed_args(display);
       uint_ptr_buffer_tx_slave(to_buffer, to_lcd);
       usbv_server(to_lcd, from_lcd, c_led);
-      usb_video_main();
       uint_ptr_buffer(from_lcd, from_buffer);
       doom_display(display, to_buffer, from_buffer);
     }
-    // on tile[1]:
-    // {
-    //   led_task(c_led);
-    // }
+    on tile[1]:
+    par{
+      led_task(c_led);
+      usb_video_main();
+    }
   }
   return 0;
 }

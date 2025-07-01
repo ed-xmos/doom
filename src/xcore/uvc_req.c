@@ -35,12 +35,15 @@ XUD_Result_t UVC_InterfaceClassRequests(XUD_ep ep_out, XUD_ep ep_in, USB_SetupPa
     XUD_Result_t result = XUD_RES_ERR;
 
 #if defined (DEBUG) && (DEBUG == 1)
-    printhexln(sp->bRequest);
+    // printhexln(sp->bRequest);
 #endif
+    // printstrln("");
 
     switch(sp->bRequest)
     {
         case SET_CUR:
+            // printhexln(sp->bRequest);
+
             /* VideoStreaming Interface */
             if(sp->wIndex == 0x01)
             {
@@ -77,20 +80,28 @@ XUD_Result_t UVC_InterfaceClassRequests(XUD_ep ep_out, XUD_ep ep_in, USB_SetupPa
         case GET_MIN:
         case GET_MAX:
         case GET_CUR:
+            printhexln(sp->bRequest);
+
             /* VideoControl Interface */
             if(sp->wIndex == 0x00)
             {
                 /* Handle VideoControl interface requests here */
+                // printstrln("VideoControl interface");
             }
             /* VideoStreaming Interface */
             else if(sp->wIndex == 0x01)
             {
+                // printstrln("VideoStreaming interface");
+                // printhexln((sp->wValue >> 8) & 0xFF);
                 switch((sp->wValue >> 8) & 0xFF)
                 {
                    case VS_PROBE_CONTROL:
+                    // printintln(sp->wLength);
+                    // printintln(sizeof(dataProbeCommit));
                        if(sp->wLength <= sizeof(dataProbeCommit)) {
                            length = sp->wLength;
                            result = XUD_DoGetRequest(ep_out, ep_in, (unsigned char *) (&dataProbeCommit), length, sp->wLength);
+                           // printintln(result);
                            return result;
                        }
                        break;
@@ -104,7 +115,7 @@ XUD_Result_t UVC_InterfaceClassRequests(XUD_ep ep_out, XUD_ep ep_in, USB_SetupPa
 
         default:
             // Error case
-            printhexln(sp->bRequest);
+            // printhexln(sp->bRequest);
             return result;
             break;
     }
