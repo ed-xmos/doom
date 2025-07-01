@@ -80,7 +80,7 @@ XUD_Result_t UVC_InterfaceClassRequests(XUD_ep ep_out, XUD_ep ep_in, USB_SetupPa
         case GET_MIN:
         case GET_MAX:
         case GET_CUR:
-            printhexln(sp->bRequest);
+            // printhexln(sp->bRequest);
 
             /* VideoControl Interface */
             if(sp->wIndex == 0x00)

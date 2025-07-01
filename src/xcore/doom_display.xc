@@ -6,10 +6,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-int go_usb = 0;
-unsafe{
-  volatile int * unsafe p_go_usb = &go_usb;
-}
 
 #define HORIZONTAL_OFFSET ((LCD_WIDTH - SCREEN_WIDTH) / 2)
 #define VERTICAL_OFFSET ((LCD_HEIGHT - SCREEN_HEIGHT) / 2)
@@ -20,10 +16,15 @@ static void movable_memset(char p[n], int c, size_t n)
   memset(p, c, n);
 }
 
+unsafe client interface doom_usbv_display_t g_doom_usbv_display;
+
 void doom_display(server interface doom_display screen,
                   client interface uint_ptr_tx_slave to_lcd,
-                  client interface uint_ptr_rx from_lcd)
+                  client interface uint_ptr_rx from_lcd,
+                  client interface doom_usbv_display_t i_doom_usbv_display)
 {
+  unsafe{g_doom_usbv_display = i_doom_usbv_display;}
+
   static uint16_t palette[256] = {0};
   static uint8_t frame[SCREEN_WIDTH * SCREEN_HEIGHT] = {0};
   static unsigned row0[LCD_ROW_WORDS] = {0};
@@ -109,7 +110,7 @@ static client interface doom_display * movable display_ptr;
 
 void doom_display_set_pointer(client interface doom_display * movable display)
 {
-  printf("doom_display_set_pointer\n");
+  printf("****doom_display_set_pointer\n");
   display_ptr = move(display);
 }
 
@@ -117,21 +118,22 @@ void doom_display_set_palette(const uint16_t new_palette[256])
 {
   // printf("doom_display_set_palette\n");
   // display_ptr->set_palette(new_palette);
-  printf("doom_display_set_palette\n");
+  // printf("doom_display_set_palette\n");
+  unsafe{g_doom_usbv_display.set_palette(new_palette);}
 }
 
 void doom_display_write(const uint8_t frame[SCREEN_WIDTH * SCREEN_HEIGHT])
 {
   // printf("doom_display_write\n");
-  unsafe{*p_go_usb = 1;}
   // display_ptr->write(frame);
-  printf("doom_display_write\n");
+  // printf("doom_display_write\n");
+  unsafe{g_doom_usbv_display.write_frame(frame);}
 }
 
 void doom_display_read(uint8_t frame[SCREEN_WIDTH * SCREEN_HEIGHT])
 {
   // printf("doom_display_read\n");
   // display_ptr->read(frame);
-  printf("doom_display_read\n");
+  printf("****doom_display_read\n");
 
 }

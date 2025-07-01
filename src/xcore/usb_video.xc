@@ -2,6 +2,13 @@
 #include <xs1.h>
 #include <stdio.h>
 
+uint8_t yuv2_frame[2 * SCREEN_WIDTH * SCREEN_HEIGHT] = {0};
+unsafe{ unsigned int *unsafe img_ptr = (unsigned int *)yuv2_frame;
+        uint8_t *unsafe yuv2_frame_ptr = yuv2_frame;
+}
+
+
+
 static void
 output_row(unsigned short row[LCD_ROW_WORDS * 2],
            unsigned &time)
@@ -382,15 +389,15 @@ void VideoEndpointsHandler(chanend c_epint_in, chanend c_episo_in)
             increment = line_size;
         }
 
-        // // Copy data from middle_of_line to the end of the line
-        // for (unsigned i = 0; i < line_size - increment; i++) {
-        //     payload_data_ptr[i] = img_ptr[middle_of_line++];
-        // }
+        // Copy data from middle_of_line to the end of the line
+        for (unsigned i = 0; i < line_size - increment; i++) unsafe{
+            payload_data_ptr[i] = img_ptr[middle_of_line++];
+        }
 
-        // // Copy data from start_of_line to increment
-        // for (unsigned j = 0; j < increment; j++) {
-        //     payload_data_ptr[line_size - increment + j] = img_ptr[start_of_line++];
-        // }
+        // Copy data from start_of_line to increment
+        for (unsigned j = 0; j < increment; j++) unsafe{
+            payload_data_ptr[line_size - increment + j] = img_ptr[start_of_line++];
+        }
 
         line_count += 1;
         if(line_count >= HEIGHT)
@@ -398,7 +405,7 @@ void VideoEndpointsHandler(chanend c_epint_in, chanend c_episo_in)
             line_count = 0;
             frame = frame ^ 1;  /* Toggle FID bit */
             sofCounts += HEIGHT;
-            increment++;
+            // increment++; // Don't roll display
             if (increment >= LINE_SIZE_BYTES / sizeof(int)) {
                 increment = 0;
             }
@@ -413,6 +420,77 @@ void VideoEndpointsHandler(chanend c_epint_in, chanend c_episo_in)
 }
 
 
+// Helper function to convert RGB to YUV
+void rgb_to_yuv(uint8_t r, uint8_t g, uint8_t b, uint8_t* y, uint8_t* u, uint8_t* v) {
+    *y = (uint8_t)((  66 * r + 129 * g +  25 * b + 128) >> 8) + 16;
+    *u = (uint8_t)(( -38 * r -  74 * g + 112 * b + 128) >> 8) + 128;
+    *v = (uint8_t)(( 112 * r -  94 * g -  18 * b + 128) >> 8) + 128;
+}
+
+// Convert two RGB565 pixels to one YUY2 pair
+void rgb565_to_yuy2(uint16_t rgb1, uint16_t rgb2, uint8_t* yuy2_out) {
+    // Extract RGB components from RGB565
+    uint8_t r1 = ((rgb1 >> 11) & 0x1F) << 3;
+    uint8_t g1 = ((rgb1 >> 5) & 0x3F) << 2;
+    uint8_t b1 = (rgb1 & 0x1F) << 3;
+
+    uint8_t r2 = ((rgb2 >> 11) & 0x1F) << 3;
+    uint8_t g2 = ((rgb2 >> 5) & 0x3F) << 2;
+    uint8_t b2 = (rgb2 & 0x1F) << 3;
+
+    uint8_t y1, u1, v1;
+    uint8_t y2, u2, v2;
+
+    rgb_to_yuv(r1, g1, b1, &y1, &u1, &v1);
+    rgb_to_yuv(r2, g2, b2, &y2, &u2, &v2);
+
+    // Average U and V for chroma subsampling
+    uint8_t u = (u1 + u2) / 2;
+    uint8_t v = (v1 + v2) / 2;
+
+    // YUY2 stores as: Y0 U Y1 V
+    yuy2_out[0] = y1;
+    yuy2_out[1] = u;
+    yuy2_out[2] = y2;
+    yuy2_out[3] = v;
+}
+
+void buffer_rx(server interface doom_usbv_display_t i_doom_usbv_display){
+    uint16_t palette[256] = {0};
+    uint8_t frame[SCREEN_WIDTH * SCREEN_HEIGHT] = {0};
+
+    int convert_frame = 0;
+
+    while(1){
+        select{
+            case i_doom_usbv_display.set_palette(const uint16_t new_palette[256]):
+                memcpy(palette, new_palette, sizeof(new_palette));
+                // printf("buffer_rx set_palette\n");
+                // convert_frame = 1;
+                break;
+            case i_doom_usbv_display.write_frame(const uint8_t new_frame[SCREEN_WIDTH * SCREEN_HEIGHT]):
+                memcpy(frame, new_frame, sizeof(new_frame));
+                // printf("buffer_rx write_frame\n");
+                convert_frame = 1;
+                break;
+
+            convert_frame => default:
+                convert_frame = 0;
+                printf("NEW FRAME TO RENDER\n");
+                // Convert 2 pix at a time
+                for(int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i += 2)unsafe{
+                    uint8_t *yuv2_ptr;
+                    unsafe{yuv2_ptr = (uint8_t*)&yuv2_frame_ptr[i * 2];}
+                    uint16_t rgb1 = palette[frame[i]];
+                    uint16_t rgb2 = palette[frame[i+1]];
+
+                    rgb565_to_yuy2(rgb1, rgb2, yuv2_ptr);
+                }
+                break;
+        }
+    }
+}
+
 
 /* Endpoint count defines */
 #define EP_COUNT_OUT   1    // 1 OUT EP0
@@ -424,14 +502,11 @@ void VideoEndpointsHandler(chanend c_epint_in, chanend c_episo_in)
 XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
 XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_INT, XUD_EPTYPE_ISO};
 
-extern volatile int * unsafe p_go_usb;
 
-void usb_video_main(void) {
+void usb_video_main(server interface doom_usbv_display_t i_doom_usbv_display) {
 
     chan c_ep_out[EP_COUNT_OUT], c_ep_in[EP_COUNT_IN];
 
-    // unsafe{while(*p_go_usb == 0);}
-    // delay_seconds(40);
     printf("GO USB!\n");
 
     /* 'Par' statement to run the following tasks in parallel */
@@ -444,5 +519,7 @@ void usb_video_main(void) {
         Endpoint0(c_ep_out[0], c_ep_in[0]);
 
         VideoEndpointsHandler(c_ep_in[1], c_ep_in[2]);
+
+        buffer_rx(i_doom_usbv_display);
     }
 }

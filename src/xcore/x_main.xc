@@ -68,6 +68,8 @@ int main(void)
   interface uint_ptr_rx from_buffer;
   interface doom_display display;
 
+  interface doom_usbv_display_t i_doom_usbv_display;
+
   chan c_led;
 
   par {
@@ -78,12 +80,12 @@ int main(void)
       uint_ptr_buffer_tx_slave(to_buffer, to_lcd);
       usbv_server(to_lcd, from_lcd, c_led);
       uint_ptr_buffer(from_lcd, from_buffer);
-      doom_display(display, to_buffer, from_buffer);
+      doom_display(display, to_buffer, from_buffer, i_doom_usbv_display);
     }
     on tile[1]:
     par{
       led_task(c_led);
-      usb_video_main();
+      usb_video_main(i_doom_usbv_display);
     }
   }
   return 0;

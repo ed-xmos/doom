@@ -2,6 +2,7 @@
 #define _doom_display_h_
 
 #include <stdint.h>
+#include "usb_video.h"
 
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 200
@@ -26,7 +27,8 @@ extends client interface doom_display : {
 
 void doom_display(server interface doom_display screen,
                   client interface uint_ptr_tx_slave to_lcd,
-                  client interface uint_ptr_rx from_lcd);
+                  client interface uint_ptr_rx from_lcd,
+                  client interface doom_usbv_display_t i_doom_usbv_display);
 
 void doom_display_set_pointer(client interface doom_display * movable display);
 #endif
