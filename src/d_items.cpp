@@ -52,7 +52,7 @@
 //  atkstate, i.e. attack/fire/hit frame
 //  flashstate, muzzle flash
 //
-EXTMEMD weaponinfo_t    weaponinfo[NUMWEAPONS] =
+weaponinfo_t    weaponinfo[NUMWEAPONS] =
 {
   {
     // fist

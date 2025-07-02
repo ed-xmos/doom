@@ -33,6 +33,8 @@ int I_FileExists(const char *path)
 
 int I_FileIsReadable(const char *path)
 {
+  printf("fopen I_FileIsReadable\n");
+
   FILE *fp = fopen(path, "r");
   if (!fp)
     return 0;
@@ -45,9 +47,9 @@ int I_IsATerminal(int fd)
   return 0;
 }
 
-#define HEAP_MB 6
+#define HEAP_MB 1.9
 
-EXTMEMD static byte heap[HEAP_MB*1024*1024];
+EXTMEMD static byte heap[(unsigned)(HEAP_MB*1024*1024)];
 
 byte *I_ZoneBase(int *size)
 {

@@ -733,6 +733,7 @@ OVERLAY void R_InitTranMap(int progress)
         unsigned char pct;
         unsigned char playpal[256];
       } cache;
+      printf("fopen R_InitTranMap\n");
       FILE *cachefp = fopen(strcat(strcpy(fname, D_DoomExeDir()),
                                    "/tranmap.dat"),"r+b");
 
@@ -740,6 +741,7 @@ OVERLAY void R_InitTranMap(int progress)
 
       // Use cached translucency filter if it's available
 
+      printf("fopen R_InitTranMap\n");
       if (!cachefp ? cachefp = fopen(fname,"wb") , 1 :
           fread(&cache, 1, sizeof cache, cachefp) != sizeof cache ||
           cache.pct != tran_filter_pct ||

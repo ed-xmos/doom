@@ -761,6 +761,7 @@ int I_RegisterSong(const void *data, size_t len)
 //printf("Registering song {%c%c%c}\n", ((unsigned char *)data)[0],
 //                                      ((unsigned char *)data)[1],
 //                                      ((unsigned char *)data)[2]);
+  printf("fopen I_RegisterSong\n");
   midfile = fopen(MIDI_TMPFILE, "wb");
   if ( midfile == NULL ) {
     printf("Couldn't write MIDI to %s\n", MIDI_TMPFILE);

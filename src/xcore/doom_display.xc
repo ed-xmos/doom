@@ -25,6 +25,8 @@ void doom_display(server interface doom_display screen,
 {
   unsafe{g_doom_usbv_display = i_doom_usbv_display;}
 
+  while(1); // TODO remove below and as we now do display in the other tile
+
   static uint16_t palette[256] = {0};
   static uint8_t frame[SCREEN_WIDTH * SCREEN_HEIGHT] = {0};
   static unsigned row0[LCD_ROW_WORDS] = {0};

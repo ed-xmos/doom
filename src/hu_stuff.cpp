@@ -207,16 +207,16 @@ int hudcolor_list;  // list of messages color
 int hud_list_bgon;  // enable for solid window background for message list
 
 //jff 2/16/98 initialization strings for ammo, health, armor widgets
-EXTMEMD static char hud_coordstrx[32];
-EXTMEMD static char hud_coordstry[32];
-EXTMEMD static char hud_coordstrz[32];
-EXTMEMD static char hud_ammostr[80];
-EXTMEMD static char hud_healthstr[80];
-EXTMEMD static char hud_armorstr[80];
-EXTMEMD static char hud_weapstr[80];
-EXTMEMD static char hud_keysstr[80];
-EXTMEMD static char hud_gkeysstr[80]; //jff 3/7/98 add support for graphic key display
-EXTMEMD static char hud_monsecstr[80];
+static char hud_coordstrx[32];
+static char hud_coordstry[32];
+static char hud_coordstrz[32];
+static char hud_ammostr[80];
+static char hud_healthstr[80];
+static char hud_armorstr[80];
+static char hud_weapstr[80];
+static char hud_keysstr[80];
+static char hud_gkeysstr[80]; //jff 3/7/98 add support for graphic key display
+static char hud_monsecstr[80];
 
 //jff 2/16/98 declaration of color switch points
 extern int ammo_red;

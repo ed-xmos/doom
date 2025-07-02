@@ -608,6 +608,7 @@ OVERLAY void M_SaveDefaults (void)
   int   i;
   FILE* f;
   
+  printf("fopen M_SaveDefaults\n");
   f = fopen (defaultfile, "w");
   if (!f)
     return; // can't write the file, but don't complain
@@ -697,6 +698,7 @@ OVERLAY void M_LoadDefaults (void)
 
   // read the file in, overriding any set defaults
 
+  printf("fopen M_LoadDefaults\n");
   f = fopen (defaultfile, "r");
   if (f)
     {
@@ -945,6 +947,7 @@ OVERLAY static void WriteBMPfile(const char* filename, const byte* data,
   bmih.biClrUsed = LONG(256);
   bmih.biClrImportant = LONG(256);
 
+  printf("fopen WriteBMPfile\n");
   st = fopen(filename,"wb");
   if (st!=NULL) {
     // write the header

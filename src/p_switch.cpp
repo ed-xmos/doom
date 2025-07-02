@@ -46,7 +46,7 @@ static int *switchlist;                           // killough
 static int max_numswitches;                       // killough
 static int numswitches;                           // killough
 
-EXTMEMD button_t  buttonlist[MAXBUTTONS];
+button_t  buttonlist[MAXBUTTONS];
 
 //
 // P_InitSwitchList()

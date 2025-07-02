@@ -120,7 +120,7 @@ char    baseiwad[PATH_MAX+1];      // jff 3/23/98: iwad directory
 char    basesavegame[PATH_MAX+1];  // killough 2/16/98: savegame directory
 
 //jff 4/19/98 list of standard IWAD names
-EXTMEMD const char *const standard_iwads[]=
+const char *const standard_iwads[]=
 {
   "doom2f.wad",
   "doom2.wad",
@@ -130,7 +130,7 @@ EXTMEMD const char *const standard_iwads[]=
   "doom1.wad",
   "doomu.wad", /* CPhipps - alow doomu.wad */
 };
-EXTMEMD static const int nstandard_iwads = sizeof standard_iwads/sizeof*standard_iwads;
+static const int nstandard_iwads = sizeof standard_iwads/sizeof*standard_iwads;
 
 void D_ProcessEvents (void);
 void D_DoAdvanceDemo (void);
@@ -600,7 +600,7 @@ OVERLAY char *D_DoomExeDir(void)
   return base;
 }
 #else
-EXTMEMD static const char lsdldoom_dir[] = {"c:\\windows\\system\\"};
+static const char lsdldoom_dir[] = {"c:\\windows\\system\\"};
 
 char *D_DoomExeDir(void)
 {
@@ -886,7 +886,7 @@ OVERLAY static char *FindIWADFile(void)
     for (i=0; !iwad && i<nstandard_iwads; i++)
       iwad = FindWADFile(standard_iwads[i], ".wad");
   }
-  printf("Post FindIWADFile\n");
+  // printf("Post FindIWADFile\n");
   return iwad;
 }
 
@@ -1016,6 +1016,7 @@ OVERLAY void FindResponseFile (void)
         const char **newargv;
 
         // READ THE RESPONSE FILE INTO MEMORY
+        printf("fopen FindResponseFile\n");
         handle = fopen (&myargv[i][1],"rb");
         if (!handle)
           {

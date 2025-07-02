@@ -82,7 +82,7 @@ angle_t clipangle;
 // flattening the arc to a flat projection plane.
 // There will be many angles mapped to the same X. 
 
-EXTMEMD int viewangletox[FINEANGLES/2];
+int viewangletox[FINEANGLES/2];
 
 // The xtoviewangleangle[] table maps a screen pixel
 // to the lowest viewangle that maps back to x ranges

@@ -456,7 +456,7 @@ typedef struct {
 } deh_strs;
 
 // CPhipps - const, static
-EXTMEMD static const deh_strs deh_strlookup[] = {
+static const deh_strs deh_strlookup[] = {
   {&s_D_DEVSTR,"D_DEVSTR"},
   {&s_D_CDROM,"D_CDROM"},
   {&s_PRESSKEY,"PRESSKEY"},
@@ -775,7 +775,7 @@ EXTMEMD static const deh_strs deh_strlookup[] = {
   {&savegamename,"SAVEGAMENAME"},  // Ty 05/03/98
 };
 
-EXTMEMD static int deh_numstrlookup =
+static int deh_numstrlookup =
 sizeof(deh_strlookup)/sizeof(deh_strlookup[0]);
 
 #endif /* DEHACKED */
@@ -957,30 +957,30 @@ extern const char **const mapnamest[] = // TNT WAD map names.
 #ifdef DEHACKED
 
 // Function prototypes
-EXTMEMD static void    lfstrip(char *);     // strip the \r and/or \n off of a line
-EXTMEMD static void    rstrip(char *);      // strip trailing whitespace
-EXTMEMD static char *  ptr_lstrip(char *);  // point past leading whitespace
-EXTMEMD static boolean deh_GetData(char *, char *, long *, char **, FILE *);
-EXTMEMD static boolean deh_procStringSub(char *, char *, char *, FILE *);
-EXTMEMD static char *  dehReformatStr(char *);
+static void    lfstrip(char *);     // strip the \r and/or \n off of a line
+static void    rstrip(char *);      // strip trailing whitespace
+static char *  ptr_lstrip(char *);  // point past leading whitespace
+static boolean deh_GetData(char *, char *, long *, char **, FILE *);
+static boolean deh_procStringSub(char *, char *, char *, FILE *);
+static char *  dehReformatStr(char *);
 
 // Prototypes for block processing functions
 // Pointers to these functions are used as the blocks are encountered.
 
-EXTMEMD static void deh_procThing(DEHFILE *, FILE*, char *);
-EXTMEMD static void deh_procFrame(DEHFILE *, FILE*, char *);
-EXTMEMD static void deh_procPointer(DEHFILE *, FILE*, char *);
-EXTMEMD static void deh_procSounds(DEHFILE *, FILE*, char *);
-EXTMEMD static void deh_procAmmo(DEHFILE *, FILE*, char *);
-EXTMEMD static void deh_procWeapon(DEHFILE *, FILE*, char *);
-EXTMEMD static void deh_procSprite(DEHFILE *, FILE*, char *);
-EXTMEMD static void deh_procCheat(DEHFILE *, FILE*, char *);
-EXTMEMD static void deh_procMisc(DEHFILE *, FILE*, char *);
-EXTMEMD static void deh_procText(DEHFILE *, FILE*, char *);
-EXTMEMD static void deh_procPars(DEHFILE *, FILE*, char *);
-EXTMEMD static void deh_procStrings(DEHFILE *, FILE*, char *);
-EXTMEMD static void deh_procError(DEHFILE *, FILE*, char *);
-EXTMEMD static void deh_procBexCodePointers(DEHFILE *, FILE*, char *);
+static void deh_procThing(DEHFILE *, FILE*, char *);
+static void deh_procFrame(DEHFILE *, FILE*, char *);
+static void deh_procPointer(DEHFILE *, FILE*, char *);
+static void deh_procSounds(DEHFILE *, FILE*, char *);
+static void deh_procAmmo(DEHFILE *, FILE*, char *);
+static void deh_procWeapon(DEHFILE *, FILE*, char *);
+static void deh_procSprite(DEHFILE *, FILE*, char *);
+static void deh_procCheat(DEHFILE *, FILE*, char *);
+static void deh_procMisc(DEHFILE *, FILE*, char *);
+static void deh_procText(DEHFILE *, FILE*, char *);
+static void deh_procPars(DEHFILE *, FILE*, char *);
+static void deh_procStrings(DEHFILE *, FILE*, char *);
+static void deh_procError(DEHFILE *, FILE*, char *);
+static void deh_procBexCodePointers(DEHFILE *, FILE*, char *);
 
 // Structure deh_block is used to hold the block names that can
 // be encountered, and the routines to use to decipher them
@@ -999,7 +999,7 @@ typedef struct
 
 // Put all the block header values, and the function to be called when that
 // one is encountered, in this array:
-EXTMEMD static const deh_block deh_blocks[] = { // CPhipps - static const
+static const deh_block deh_blocks[] = { // CPhipps - static const
   /* 0 */  {"Thing",deh_procThing},
   /* 1 */  {"Frame",deh_procFrame},
   /* 2 */  {"Pointer",deh_procPointer},
@@ -1074,7 +1074,7 @@ struct deh_mobjflags_s {
 };
 
 // CPhipps - static const
-EXTMEMD static const struct deh_mobjflags_s deh_mobjflags[] = {
+static const struct deh_mobjflags_s deh_mobjflags[] = {
   {"SPECIAL",      0x00000001}, // call  P_Specialthing when touched
   {"SOLID",        0x00000002}, // block movement
   {"SHOOTABLE",    0x00000004}, // can be hit
@@ -1127,7 +1127,7 @@ EXTMEMD static const struct deh_mobjflags_s deh_mobjflags[] = {
 // that Dehacked uses and is useless to us.
 // * states are base zero and have a dummy #0 (TROO)
 
-EXTMEMD static const char *deh_state[] = // CPhipps - static const*
+static const char *deh_state[] = // CPhipps - static const*
 {
   "Sprite number",    // .sprite (spritenum_t) // an enum
   "Sprite subnumber", // .frame (long)
@@ -1148,7 +1148,7 @@ EXTMEMD static const char *deh_state[] = // CPhipps - static const*
 
 // * sounds are base zero but have a dummy #0
 
-EXTMEMD static const char *deh_sfxinfo[] = // CPhipps - static const*
+static const char *deh_sfxinfo[] = // CPhipps - static const*
 {
   "Offset",     // pointer to a name string, changed in text
   "Zero/One",   // .singularity (int, one at a time flag)
@@ -1181,7 +1181,7 @@ static const char *deh_sprite[] = // CPhipps - static const*
 // usage = Ammo n (name)
 // Ammo information for the few types of ammo
 
-EXTMEMD static const char *deh_ammo[] = // CPhipps - static const*
+static const char *deh_ammo[] = // CPhipps - static const*
 {
   "Max ammo",   // maxammo[]
   "Per ammo"    // clipammo[]
@@ -1191,7 +1191,7 @@ EXTMEMD static const char *deh_ammo[] = // CPhipps - static const*
 // Usage: Weapon nn (name)
 // Basically a list of frames and what kind of ammo (see above)it uses.
 
-EXTMEMD static const char *deh_weapon[] = // CPhipps - static const*
+static const char *deh_weapon[] = // CPhipps - static const*
 {
   "Ammo type",      // .ammo
   "Deselect frame", // .upstate
@@ -1212,7 +1212,7 @@ EXTMEMD static const char *deh_weapon[] = // CPhipps - static const*
 // Usage: Misc 0
 // Always uses a zero in the dehacked file, for consistency.  No meaning.
 
-EXTMEMD static const char *deh_misc[] = // CPhipps - static const*
+static const char *deh_misc[] = // CPhipps - static const*
 {
   "Initial Health",    // initial_health
   "Initial Bullets",   // initial_bullets
@@ -1335,7 +1335,7 @@ typedef struct {
   // CPhipps - const*
 } deh_bexptr;
 
-EXTMEMD static const deh_bexptr deh_bexptrs[] = // CPhipps - static const
+static const deh_bexptr deh_bexptrs[] = // CPhipps - static const
 {
   {Action_A_Light0,         "A_Light0"},
   {Action_A_WeaponReady,    "A_WeaponReady"},
@@ -1427,7 +1427,7 @@ EXTMEMD static const deh_bexptr deh_bexptrs[] = // CPhipps - static const
 
 // to hold startup code pointers from INFO.C
 // CPhipps - static
-EXTMEMD static action_t deh_codeptr[NUMSTATES];
+static action_t deh_codeptr[NUMSTATES];
 
 // ====================================================================
 // ProcessDehFile
@@ -1441,6 +1441,7 @@ EXTMEMD static action_t deh_codeptr[NUMSTATES];
 
 OVERLAY void ProcessDehFile(const char *filename, const char *outfilename, int lumpnum)
 {
+  printf("fopen ProcessDehFile\n");
   static FILE *fileout;       // In case -dehout was used
   DEHFILE infile, *filein = &infile;    // killough 10/98
   char inbuffer[DEH_BUFFERMAX];  // Place to put the primary infostring

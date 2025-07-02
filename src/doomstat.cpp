@@ -44,35 +44,35 @@
  Language_t   language = english;
 
 // Set if homebrew PWAD stuff has been added.
-EXTMEMD boolean modifiedgame;
+boolean modifiedgame;
 
 //-----------------------------------------------------------------------------
 
 // CPhipps - compatibility vars
-EXTMEMD int compatibility_level, default_compatibility_level;
+int compatibility_level, default_compatibility_level;
 
 // v1.1-like pitched sounds
-EXTMEMD int pitched_sounds, default_pitched_sounds;        // killough
+int pitched_sounds, default_pitched_sounds;        // killough
 
-EXTMEMD int     default_translucency; // config file says           // phares
-EXTMEMD boolean general_translucency; // true if translucency is ok // phares
+int     default_translucency; // config file says           // phares
+boolean general_translucency; // true if translucency is ok // phares
 
-EXTMEMD int demo_insurance, default_demo_insurance;        // killough 1/16/98
+int demo_insurance, default_demo_insurance;        // killough 1/16/98
 
  int  allow_pushers = 1;      // MT_PUSH Things              // phares 3/10/98
-EXTMEMD int  default_allow_pushers;  // killough 3/1/98: make local to each game
+int  default_allow_pushers;  // killough 3/1/98: make local to each game
 
  int  variable_friction = 1;      // ice & mud               // phares 3/10/98
-EXTMEMD int  default_variable_friction;  // killough 3/1/98: make local to each game
+int  default_variable_friction;  // killough 3/1/98: make local to each game
 
-EXTMEMD int  weapon_recoil;              // weapon recoil                   // phares
-EXTMEMD int  default_weapon_recoil;      // killough 3/1/98: make local to each game
+int  weapon_recoil;              // weapon recoil                   // phares
+int  default_weapon_recoil;      // killough 3/1/98: make local to each game
 
-EXTMEMD int player_bobbing;  // whether player bobs or not          // phares 2/25/98
-EXTMEMD int default_player_bobbing;  // killough 3/1/98: make local to each game
+int player_bobbing;  // whether player bobs or not          // phares 2/25/98
+int default_player_bobbing;  // killough 3/1/98: make local to each game
 
-EXTMEMD int monsters_remember;          // killough 3/1/98
-EXTMEMD int default_monsters_remember;
+int monsters_remember;          // killough 3/1/98
+int default_monsters_remember;
 
 //----------------------------------------------------------------------------
 //

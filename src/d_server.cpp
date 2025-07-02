@@ -83,7 +83,7 @@ OVERLAY void BroadcastPacket(packet_header_t *packet, size_t len)
       I_SendPacketTo(packet, len, &remoteaddr[i]);
 }
 
-EXTMEMD byte def_game_options[GAME_OPTIONS_SIZE] = \
+byte def_game_options[GAME_OPTIONS_SIZE] = \
 { // cf g_game.c:G_WriteOptions()
   1, // monsters remember
   1, // friction

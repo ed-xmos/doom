@@ -20,8 +20,8 @@ unsigned char*	channelsend[NUM_CHANNELS];
 int		channelstart[NUM_CHANNELS];
 int 		channelhandles[NUM_CHANNELS];
 int		channelids[NUM_CHANNELS];
-EXTMEMD int		steptable[256];
-EXTMEMD int		vol_lookup[128*256];
+int		steptable[256];
+int		vol_lookup[128*256];
 int*		channelleftvol_lookup[NUM_CHANNELS];
 int*		channelrightvol_lookup[NUM_CHANNELS];
 

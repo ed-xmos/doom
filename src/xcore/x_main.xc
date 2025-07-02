@@ -77,9 +77,9 @@ int main(void)
     par {
       // doom_task(argc, argv, display);
       doom_task_fixed_args(display);
-      uint_ptr_buffer_tx_slave(to_buffer, to_lcd);
-      usbv_server(to_lcd, from_lcd, c_led);
-      uint_ptr_buffer(from_lcd, from_buffer);
+      // uint_ptr_buffer_tx_slave(to_buffer, to_lcd);
+      // usbv_server(to_lcd, from_lcd, c_led);
+      // uint_ptr_buffer(from_lcd, from_buffer);
       doom_display(display, to_buffer, from_buffer, i_doom_usbv_display);
     }
     on tile[1]:

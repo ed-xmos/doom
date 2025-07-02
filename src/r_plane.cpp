@@ -56,7 +56,7 @@
 
 #define MAXVISPLANES 128    /* must be a power of 2 */
 
-EXTMEMD static visplane_t *visplanes[MAXVISPLANES];   // killough
+static visplane_t *visplanes[MAXVISPLANES];   // killough
 static visplane_t *freetail;                  // killough
 static visplane_t **freehead = &freetail;     // killough
 visplane_t *floorplane, *ceilingplane;
@@ -74,11 +74,11 @@ short *openings,*lastopening;
 //  floorclip starts out SCREENHEIGHT
 //  ceilingclip starts out -1
 
-EXTMEMD short floorclip[MAX_SCREENWIDTH], ceilingclip[MAX_SCREENWIDTH];
+short floorclip[MAX_SCREENWIDTH], ceilingclip[MAX_SCREENWIDTH];
 
 // spanstart holds the start of a plane span; initialized to 0 at start
 
-EXTMEMD static int spanstart[MAX_SCREENHEIGHT];                // killough 2/8/98
+static int spanstart[MAX_SCREENHEIGHT];                // killough 2/8/98
 
 //
 // texture mapping
@@ -89,14 +89,14 @@ static fixed_t planeheight;
 
 // killough 2/8/98: make variables static
 
-EXTMEMD static fixed_t basexscale, baseyscale;
-EXTMEMD static fixed_t cachedheight[MAX_SCREENHEIGHT];
-EXTMEMD static fixed_t cacheddistance[MAX_SCREENHEIGHT];
-EXTMEMD static fixed_t cachedxstep[MAX_SCREENHEIGHT];
-EXTMEMD static fixed_t cachedystep[MAX_SCREENHEIGHT];
-EXTMEMD static fixed_t xoffs,yoffs;    // killough 2/28/98: flat offsets
+static fixed_t basexscale, baseyscale;
+static fixed_t cachedheight[MAX_SCREENHEIGHT];
+static fixed_t cacheddistance[MAX_SCREENHEIGHT];
+static fixed_t cachedxstep[MAX_SCREENHEIGHT];
+static fixed_t cachedystep[MAX_SCREENHEIGHT];
+static fixed_t xoffs,yoffs;    // killough 2/28/98: flat offsets
 
-EXTMEMD fixed_t yslope[MAX_SCREENHEIGHT], distscale[MAX_SCREENWIDTH];
+fixed_t yslope[MAX_SCREENHEIGHT], distscale[MAX_SCREENWIDTH];
 
 //
 // R_InitPlanes

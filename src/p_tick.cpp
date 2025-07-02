@@ -46,12 +46,12 @@ int leveltime;
 //
 
 // Both the head and tail of the thinker list.
-EXTMEMD thinker_t thinkercap;
+thinker_t thinkercap;
 
 // Make currentthinker external, so that P_RemoveThinkerDelayed
 // can adjust currentthinker when thinkers self-remove.
 
-EXTMEMD static thinker_t *currentthinker;
+static thinker_t *currentthinker;
 
 //
 // P_InitThinkers

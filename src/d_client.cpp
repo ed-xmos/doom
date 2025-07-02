@@ -61,22 +61,22 @@
 #define SDL_Delay(a)
 #endif
 
-EXTMEMD static boolean   server;
-EXTMEMD static int       remotetic; // Tic expected from the remote
+static boolean   server;
+static int       remotetic; // Tic expected from the remote
 #ifdef HAVE_NET
-EXTMEMD static int       remotesend; // Tic expected by the remote
+static int       remotesend; // Tic expected by the remote
 #endif
 ticcmd_t         netcmds[MAXPLAYERS][BACKUPTICS];
-EXTMEMD static ticcmd_t* localcmds;
+static ticcmd_t* localcmds;
 #ifdef HAVE_NET
-EXTMEMD static unsigned          numqueuedpackets;
-EXTMEMD static packet_header_t** queuedpacket;
+static unsigned          numqueuedpackets;
+static packet_header_t** queuedpacket;
 #endif
 doomcom_t*      doomcom;        
 int maketic;
 int ticdup = 1;
 #ifdef HAVE_NET
-EXTMEMD static int xtratics = 0;
+static int xtratics = 0;
 
 OVERLAY void D_InitNetGame (void)
 {

@@ -221,7 +221,7 @@ typedef struct
 // Using patches saves a lot of space,
 //  as they replace 320x200 full screen frames.
 //
-EXTMEMDI static anim_t epsd0animinfo[] =
+static anim_t epsd0animinfo[] =
 {
   { ANIM_ALWAYS, TICRATE/3, 3, { 224, 104 } },
   { ANIM_ALWAYS, TICRATE/3, 3, { 184, 160 } },
@@ -235,7 +235,7 @@ EXTMEMDI static anim_t epsd0animinfo[] =
   { ANIM_ALWAYS, TICRATE/3, 3, { 64, 24 } }
 };
 
-EXTMEMDI static anim_t epsd1animinfo[] =
+static anim_t epsd1animinfo[] =
 {
   { ANIM_LEVEL,  TICRATE/3, 1, { 128, 136 }, 1 },
   { ANIM_LEVEL,  TICRATE/3, 1, { 128, 136 }, 2 },
@@ -248,7 +248,7 @@ EXTMEMDI static anim_t epsd1animinfo[] =
   { ANIM_LEVEL,  TICRATE/3, 1, { 128, 136 }, 8 }
 };
 
-EXTMEMDI static anim_t epsd2animinfo[] =
+static anim_t epsd2animinfo[] =
 {
   { ANIM_ALWAYS, TICRATE/3, 3, { 104, 168 } },
   { ANIM_ALWAYS, TICRATE/3, 3, { 40, 136 } },

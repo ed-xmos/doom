@@ -57,7 +57,7 @@ void usbv_server(client interface uint_ptr_rx rx,
 #include "uvc_req.h"
 #include "uvc_defs.h"
 
-#include "img.h"
+// #include "img.h"
 
 /* Definition of Descriptors */
 /* USB Device Descriptor */
@@ -461,6 +461,11 @@ void buffer_rx(server interface doom_usbv_display_t i_doom_usbv_display){
 
     int convert_frame = 0;
 
+    timer t;
+    int frames_counted = 0;
+    int time_then;
+    t :> time_then;
+
     while(1){
         select{
             case i_doom_usbv_display.set_palette(const uint16_t new_palette[256]):
@@ -475,8 +480,15 @@ void buffer_rx(server interface doom_usbv_display_t i_doom_usbv_display){
                 break;
 
             convert_frame => default:
+                frames_counted++;
+                int time_now;
+                t :> time_now;
+                if(timeafter(time_now, time_then + XS1_TIMER_HZ)){
+                    printf("FPS: %d\n", frames_counted);
+                    time_then += XS1_TIMER_HZ;
+                    frames_counted = 0;
+                }
                 convert_frame = 0;
-                printf("NEW FRAME TO RENDER\n");
                 // Convert 2 pix at a time
                 for(int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i += 2)unsafe{
                     uint8_t *yuv2_ptr;

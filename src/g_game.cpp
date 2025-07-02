@@ -79,7 +79,7 @@ static boolean  netdemo;
 static byte     *demobuffer;   // made some static -- killough
 static size_t   maxdemosize;
 static byte     *demo_p;
-EXTMEMD static short    consistancy[MAXPLAYERS][BACKUPTICS];
+static short    consistancy[MAXPLAYERS][BACKUPTICS];
 
 gameaction_t    gameaction;
 gamestate_t     gamestate;
@@ -205,7 +205,7 @@ fixed_t sidemove[2]    = {0x18, 0x28};
 fixed_t angleturn[3]   = {640, 1280, 320};  // + slow turn
 
 // CPhipps - made lots of key/button state vars static
-EXTMEMD static boolean gamekeydown[NUMKEYS];
+static boolean gamekeydown[NUMKEYS];
 static int     turnheld;       // for accelerative turning
 
 static boolean mousearray[4];

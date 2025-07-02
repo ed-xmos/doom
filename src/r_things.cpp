@@ -69,8 +69,8 @@ static lighttable_t **spritelights;        // killough 1/25/98 made static
 // constant arrays
 //  used for psprite clipping and initializing clipping
 
-EXTMEMD short negonearray[MAX_SCREENWIDTH];        // killough 2/8/98:
-EXTMEMD short screenheightarray[MAX_SCREENWIDTH];  // change to MAX_*
+short negonearray[MAX_SCREENWIDTH];        // killough 2/8/98:
+short screenheightarray[MAX_SCREENWIDTH];  // change to MAX_*
 
 //
 // INITIALIZATION FUNCTIONS
@@ -83,8 +83,8 @@ int numsprites;
 
 #define MAX_SPRITE_FRAMES 29          /* Macroized -- killough 1/25/98 */
 
-EXTMEMD static spriteframe_t sprtemp[MAX_SPRITE_FRAMES];
-EXTMEMD static int maxframe;
+static spriteframe_t sprtemp[MAX_SPRITE_FRAMES];
+static int maxframe;
 
 //
 // R_InstallSpriteLump
