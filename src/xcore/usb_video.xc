@@ -455,6 +455,42 @@ void rgb565_to_yuy2(uint16_t rgb1, uint16_t rgb2, uint8_t* yuy2_out) {
     yuy2_out[3] = v;
 }
 
+
+static inline uint8_t clamp(int val) {
+    return (val < 0) ? 0 : (val > 255) ? 255 : val;
+}
+
+// Convert two RGB555 pixels to YUV422 (YUYV) format
+void rgb555_pair_to_yuv422(uint16_t rgb1, uint16_t rgb2, uint8_t *yuv2) {
+    // Extract RGB components from RGB555
+    uint8_t r1 = ((rgb1 >> 10) & 0x1F) << 3 | ((rgb1 >> 10) & 0x1F) >> 2;
+    uint8_t g1 = ((rgb1 >> 5)  & 0x1F) << 3 | ((rgb1 >> 5)  & 0x1F) >> 2;
+    uint8_t b1 = ( rgb1        & 0x1F) << 3 | ( rgb1        & 0x1F) >> 2;
+
+    uint8_t r2 = ((rgb2 >> 10) & 0x1F) << 3 | ((rgb2 >> 10) & 0x1F) >> 2;
+    uint8_t g2 = ((rgb2 >> 5)  & 0x1F) << 3 | ((rgb2 >> 5)  & 0x1F) >> 2;
+    uint8_t b2 = ( rgb2        & 0x1F) << 3 | ( rgb2        & 0x1F) >> 2;
+
+    // Y (Luma) components
+    int y1 = (66 * r1 + 129 * g1 + 25 * b1 + 128) >> 8;
+    int y2 = (66 * r2 + 129 * g2 + 25 * b2 + 128) >> 8;
+
+    // U and V are averaged between the two pixels
+    int u1 = (-38 * r1 - 74 * g1 + 112 * b1 + 128) >> 8;
+    int u2 = (-38 * r2 - 74 * g2 + 112 * b2 + 128) >> 8;
+    int v1 = (112 * r1 - 94 * g1 - 18 * b1 + 128) >> 8;
+    int v2 = (112 * r2 - 94 * g2 - 18 * b2 + 128) >> 8;
+
+    int u_avg = (u1 + u2) / 2 + 128;
+    int v_avg = (v1 + v2) / 2 + 128;
+
+    // Clamp and pack YUV422: Y1 U Y2 V
+    yuv2[0] = clamp(y1);
+    yuv2[1] = clamp(u_avg);
+    yuv2[2] = clamp(y2);
+    yuv2[3] = clamp(v_avg);
+}
+
 void buffer_rx(server interface doom_usbv_display_t i_doom_usbv_display){
     uint16_t palette[256] = {0};
     uint8_t frame[SCREEN_WIDTH * SCREEN_HEIGHT] = {0};
@@ -497,6 +533,7 @@ void buffer_rx(server interface doom_usbv_display_t i_doom_usbv_display){
                     uint16_t rgb2 = palette[frame[i+1]];
 
                     rgb565_to_yuy2(rgb1, rgb2, yuv2_ptr);
+                    // rgb555_pair_to_yuv422(rgb1, rgb2, yuv2_ptr);
                 }
                 break;
         }
