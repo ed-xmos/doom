@@ -420,75 +420,39 @@ void VideoEndpointsHandler(chanend c_epint_in, chanend c_episo_in)
 }
 
 
-// Helper function to convert RGB to YUV
-void rgb_to_yuv(uint8_t r, uint8_t g, uint8_t b, uint8_t* y, uint8_t* u, uint8_t* v) {
-    *y = (uint8_t)((  66 * r + 129 * g +  25 * b + 128) >> 8) + 16;
-    *u = (uint8_t)(( -38 * r -  74 * g + 112 * b + 128) >> 8) + 128;
-    *v = (uint8_t)(( 112 * r -  94 * g -  18 * b + 128) >> 8) + 128;
-}
+// Helper function to convert to YUV
+// Converts two BGR565 pixels to one YUV422 (YUYV) 4-byte block
+void bgr565_pair_to_yuyv(uint16_t p0, uint16_t p1, uint8_t *dst) {
+    // Unpack first pixel
+    uint8_t b0 = ((p0 >> 11) & 0x1F) << 3;
+    uint8_t g0 = ((p0 >> 5) & 0x3F) << 2;
+    uint8_t r0 = (p0 & 0x1F) << 3;
+    b0 |= b0 >> 5; g0 |= g0 >> 6; r0 |= r0 >> 5;
 
-// Convert two RGB565 pixels to one YUY2 pair
-void rgb565_to_yuy2(uint16_t rgb1, uint16_t rgb2, uint8_t* yuy2_out) {
-    // Extract RGB components from RGB565
-    uint8_t r1 = ((rgb1 >> 11) & 0x1F) << 3;
-    uint8_t g1 = ((rgb1 >> 5) & 0x3F) << 2;
-    uint8_t b1 = (rgb1 & 0x1F) << 3;
+    // Unpack second pixel
+    uint8_t b1 = ((p1 >> 11) & 0x1F) << 3;
+    uint8_t g1 = ((p1 >> 5) & 0x3F) << 2;
+    uint8_t r1 = (p1 & 0x1F) << 3;
+    b1 |= b1 >> 5; g1 |= g1 >> 6; r1 |= r1 >> 5;
 
-    uint8_t r2 = ((rgb2 >> 11) & 0x1F) << 3;
-    uint8_t g2 = ((rgb2 >> 5) & 0x3F) << 2;
-    uint8_t b2 = (rgb2 & 0x1F) << 3;
+    // Convert to YUV using integer BT.601
+    uint8_t y0 = (uint8_t)(((66 * r0 + 129 * g0 + 25 * b0 + 128) >> 8) + 16);
+    uint8_t y1 = (uint8_t)(((66 * r1 + 129 * g1 + 25 * b1 + 128) >> 8) + 16);
 
-    uint8_t y1, u1, v1;
-    uint8_t y2, u2, v2;
+    uint8_t u0 = (uint8_t)(((-38 * r0 - 74 * g0 + 112 * b0 + 128) >> 8) + 128);
+    uint8_t u1 = (uint8_t)(((-38 * r1 - 74 * g1 + 112 * b1 + 128) >> 8) + 128);
+    uint8_t v0 = (uint8_t)(((112 * r0 - 94 * g0 - 18 * b0 + 128) >> 8) + 128);
+    uint8_t v1 = (uint8_t)(((112 * r1 - 94 * g1 - 18 * b1 + 128) >> 8) + 128);
 
-    rgb_to_yuv(r1, g1, b1, &y1, &u1, &v1);
-    rgb_to_yuv(r2, g2, b2, &y2, &u2, &v2);
+    // Average U and V
+    uint8_t u = (u0 + u1) >> 1;
+    uint8_t v = (v0 + v1) >> 1;
 
-    // Average U and V for chroma subsampling
-    uint8_t u = (u1 + u2) / 2;
-    uint8_t v = (v1 + v2) / 2;
-
-    // YUY2 stores as: Y0 U Y1 V
-    yuy2_out[0] = y1;
-    yuy2_out[1] = u;
-    yuy2_out[2] = y2;
-    yuy2_out[3] = v;
-}
-
-
-static inline uint8_t clamp(int val) {
-    return (val < 0) ? 0 : (val > 255) ? 255 : val;
-}
-
-// Convert two RGB555 pixels to YUV422 (YUYV) format
-void rgb555_pair_to_yuv422(uint16_t rgb1, uint16_t rgb2, uint8_t *yuv2) {
-    // Extract RGB components from RGB555
-    uint8_t r1 = ((rgb1 >> 10) & 0x1F) << 3 | ((rgb1 >> 10) & 0x1F) >> 2;
-    uint8_t g1 = ((rgb1 >> 5)  & 0x1F) << 3 | ((rgb1 >> 5)  & 0x1F) >> 2;
-    uint8_t b1 = ( rgb1        & 0x1F) << 3 | ( rgb1        & 0x1F) >> 2;
-
-    uint8_t r2 = ((rgb2 >> 10) & 0x1F) << 3 | ((rgb2 >> 10) & 0x1F) >> 2;
-    uint8_t g2 = ((rgb2 >> 5)  & 0x1F) << 3 | ((rgb2 >> 5)  & 0x1F) >> 2;
-    uint8_t b2 = ( rgb2        & 0x1F) << 3 | ( rgb2        & 0x1F) >> 2;
-
-    // Y (Luma) components
-    int y1 = (66 * r1 + 129 * g1 + 25 * b1 + 128) >> 8;
-    int y2 = (66 * r2 + 129 * g2 + 25 * b2 + 128) >> 8;
-
-    // U and V are averaged between the two pixels
-    int u1 = (-38 * r1 - 74 * g1 + 112 * b1 + 128) >> 8;
-    int u2 = (-38 * r2 - 74 * g2 + 112 * b2 + 128) >> 8;
-    int v1 = (112 * r1 - 94 * g1 - 18 * b1 + 128) >> 8;
-    int v2 = (112 * r2 - 94 * g2 - 18 * b2 + 128) >> 8;
-
-    int u_avg = (u1 + u2) / 2 + 128;
-    int v_avg = (v1 + v2) / 2 + 128;
-
-    // Clamp and pack YUV422: Y1 U Y2 V
-    yuv2[0] = clamp(y1);
-    yuv2[1] = clamp(u_avg);
-    yuv2[2] = clamp(y2);
-    yuv2[3] = clamp(v_avg);
+    // Output: Y0 U Y1 V
+    dst[0] = y0;
+    dst[1] = u;
+    dst[2] = y1;
+    dst[3] = v;
 }
 
 void buffer_rx(server interface doom_usbv_display_t i_doom_usbv_display){
@@ -532,8 +496,7 @@ void buffer_rx(server interface doom_usbv_display_t i_doom_usbv_display){
                     uint16_t rgb1 = palette[frame[i]];
                     uint16_t rgb2 = palette[frame[i+1]];
 
-                    rgb565_to_yuy2(rgb1, rgb2, yuv2_ptr);
-                    // rgb555_pair_to_yuv422(rgb1, rgb2, yuv2_ptr);
+                    bgr565_pair_to_yuyv(rgb1, rgb2, yuv2_ptr);
                 }
                 break;
         }

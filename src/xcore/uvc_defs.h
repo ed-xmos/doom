@@ -37,7 +37,7 @@
 /* USB Video resolution */
 #define BITS_PER_PIXEL 16
 #define WIDTH  320
-#define HEIGHT 240
+#define HEIGHT 200
 // #define WIDTH  480
 // #define HEIGHT 270
 /* Frame rate */
