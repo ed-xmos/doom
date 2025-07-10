@@ -177,6 +177,7 @@ OVERLAY static void W_AddFile(const char *filename, wad_source_t source)
   else
     {
       // WAD file
+      printf("wad read 1 %d\n", sizeof(header));
       read(handle, &header, sizeof(header));
       if (strncmp(header.identification,"IWAD",4) != 0 &&
           strncmp(header.identification,"PWAD",4) != 0)
@@ -186,6 +187,7 @@ OVERLAY static void W_AddFile(const char *filename, wad_source_t source)
       length = header.numlumps*sizeof(filelump_t);
       fileinfo2free = fileinfo = (filelump_t *)malloc(length);    // killough
       lseek(handle, header.infotableofs, SEEK_SET);
+      printf("wad read 2 %d\n", length);
       read(handle, fileinfo, length);
       numlumps += header.numlumps;
     }
@@ -493,6 +495,7 @@ OVERLAY void W_ReadLump(int lump, void *dest)
       // killough 1/31/98: Reload hack (-wart) removed
 
       lseek(l->handle, l->position, SEEK_SET);
+      printf("lump read %d\n", l->size);
       c = read(l->handle, dest, l->size);
       if (c < l->size)
         I_Error("W_ReadLump: only read %i of %i on lump %i", c, l->size, lump);

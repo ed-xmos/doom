@@ -47,7 +47,7 @@ int I_IsATerminal(int fd)
   return 0;
 }
 
-#define HEAP_MB 2.0 // 1.9 seems to be around min for time demo
+#define HEAP_MB 2.2 // 1.9 seems to be around min for time demo
 
 EXTMEMD static byte heap[(unsigned)(HEAP_MB*1024*1024)];
 

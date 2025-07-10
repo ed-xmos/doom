@@ -3,6 +3,7 @@
 # or a valid argument for the --target option when compiling.
 
 TARGET = src/xcore/XCORE-AI-EXPLORER-800.xn
+#TARGET = src/xcore/ai_vision.xn
 
 
 # The APP_NAME variable determines the name of the final .xe file. It should
@@ -30,7 +31,7 @@ SOURCE_DIRS = src src/xcore
 
 XCC_FLAGS = -Xmapper --errdemote53  -Os -save-temps -g -report -Xmapper --map -Xmapper MAPFILE -D__XMOS__ -mcmodel=large
 XCC_FLAGS += -DPATH_MAX=64 -DVERSION=1 -DDOOMWADDIR="\"\""  -DNO_PREDEFINED_LUMPS=1
-XCC_FLAGS += -DUSE_EXTMEM=1 -Wno-unknown-pragmas  -DDEBUG_PRINT_SUPPORT=1 -DUSB_TILE=tile[1] -DXUD_CORE_CLOCK=600
+XCC_FLAGS += -DUSE_EXTMEM=1 -Wno-unknown-pragmas  -DDEBUG_PRINT_SUPPORT=1 -DUSB_TILE=tile[1] -DXUD_CORE_CLOCK=600 -lquadflash
 #XCC_FLAGS += -fcmdline-buffer-bytes=1024 
 
 #XCC_XC_FLAGS = -fimplicit-overlay $(XCC_FLAGS)
@@ -43,7 +44,7 @@ EXCLUDE_FILES += l_system.cpp l_video_sdl.cpp l_udp.cpp l_sound_sdl.cpp d_server
 
 # The USED_MODULES variable lists other module used by the application. 
 
-USED_MODULES = lib_xud
+USED_MODULES = lib_xud lib_filesystem 
 
 #=============================================================================
 # The following part of the Makefile includes the common build infrastructure
