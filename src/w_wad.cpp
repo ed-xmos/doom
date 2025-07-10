@@ -133,6 +133,8 @@ OVERLAY char *AddDefaultExtension(char *path, const char *ext)
 // CPhipps - source is an enum
 //
 
+
+
 OVERLAY static void W_AddFile(const char *filename, wad_source_t source) 
 // killough 1/31/98: static, const
 {
@@ -147,10 +149,10 @@ OVERLAY static void W_AddFile(const char *filename, wad_source_t source)
 
   // open the file and add to directory
 
-  handle = open(filename,O_RDONLY | O_BINARY);
+  handle = xopen(filename,O_RDONLY | O_BINARY);
 #ifdef HAVE_NET
   if (handle == -1 && D_NetGetWad(filename)) // CPhipps
-    handle = open(filename,O_RDONLY | O_BINARY);
+    handle = xopen(filename,O_RDONLY | O_BINARY);
 #endif
   if (handle == -1) 
     {
@@ -178,7 +180,7 @@ OVERLAY static void W_AddFile(const char *filename, wad_source_t source)
     {
       // WAD file
       printf("wad read 1 %d\n", sizeof(header));
-      read(handle, &header, sizeof(header));
+      xread(handle, &header, sizeof(header));
       if (strncmp(header.identification,"IWAD",4) != 0 &&
           strncmp(header.identification,"PWAD",4) != 0)
         I_Error ("Wad file %s doesn't have IWAD or PWAD id\n", filename);
@@ -186,9 +188,9 @@ OVERLAY static void W_AddFile(const char *filename, wad_source_t source)
       header.infotableofs = LONG(header.infotableofs);
       length = header.numlumps*sizeof(filelump_t);
       fileinfo2free = fileinfo = (filelump_t *)malloc(length);    // killough
-      lseek(handle, header.infotableofs, SEEK_SET);
+      xlseek(handle, header.infotableofs, SEEK_SET);
       printf("wad read 2 %d\n", length);
-      read(handle, fileinfo, length);
+      xread(handle, fileinfo, length);
       numlumps += header.numlumps;
     }
 
@@ -494,9 +496,9 @@ OVERLAY void W_ReadLump(int lump, void *dest)
 
       // killough 1/31/98: Reload hack (-wart) removed
 
-      lseek(l->handle, l->position, SEEK_SET);
+      xlseek(l->handle, l->position, SEEK_SET);
       printf("lump read %d\n", l->size);
-      c = read(l->handle, dest, l->size);
+      c = xread(l->handle, dest, l->size);
       if (c < l->size)
         I_Error("W_ReadLump: only read %i of %i on lump %i", c, l->size, lump);
     }
@@ -582,7 +584,7 @@ OVERLAY void WritePredefinedLumpWad(const char *filename)
 
   // The following code writes a PWAD from the predefined lumps array
   // How to write a PWAD will not be explained here.
-  if ( (handle = open (filenam, O_RDWR | O_CREAT | O_BINARY, S_IWUSR|S_IRUSR)) != -1)
+  if ( (handle = xopen (filenam, O_RDWR | O_CREAT | O_BINARY, S_IWUSR|S_IRUSR)) != -1)
   {
     wadinfo_t header = { {'P','W','A','D'} };
     size_t filepos = sizeof(wadinfo_t) + num_predefined_lumps * sizeof(filelump_t);
@@ -592,7 +594,7 @@ OVERLAY void WritePredefinedLumpWad(const char *filename)
     header.infotableofs = LONG(sizeof(header));
 
     // write header
-    write(handle, &header, sizeof(header));
+    xwrite(handle, &header, sizeof(header));
 
     // write directory
     for (i=0;i<num_predefined_lumps;i++)
@@ -601,15 +603,15 @@ OVERLAY void WritePredefinedLumpWad(const char *filename)
       fileinfo.filepos = LONG(filepos);
       fileinfo.size = LONG(predefined_lumps[i].size);
       strncpy(fileinfo.name, predefined_lumps[i].name, 8);
-      write(handle, &fileinfo, sizeof(fileinfo));
+      xwrite(handle, &fileinfo, sizeof(fileinfo));
       filepos += predefined_lumps[i].size;
     }
 
     // write lumps
     for (i=0;i<num_predefined_lumps;i++)
-      write(handle, predefined_lumps[i].data, predefined_lumps[i].size);
+      xwrite(handle, predefined_lumps[i].data, predefined_lumps[i].size);
 
-    close(handle);
+    xclose(handle);
     I_Error("Predefined lumps wad, %s written, exiting\n", filename);
   }
  I_Error("Cannot open predefined lumps wad %s for output\n", filename);

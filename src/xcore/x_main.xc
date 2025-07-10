@@ -44,6 +44,8 @@ static void doom_task(int argc, char * unsafe * unsafe argv,
   exit(status);
 }
 
+unsafe client interface fs_basic_if g_i_fs;
+
 static void doom_task_fixed_args(client interface doom_display display, client interface fs_basic_if i_fs)
 {
   client interface doom_display * movable p = &display;
@@ -64,6 +66,7 @@ static void doom_task_fixed_args(client interface doom_display display, client i
   result = i_fs.size(file_size);
   printf("size = %d result = %d\n", file_size, result);
   
+  unsafe{g_i_fs = i_fs;}
   
   unsafe{
     int xargc; 

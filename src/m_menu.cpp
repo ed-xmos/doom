@@ -947,15 +947,15 @@ OVERLAY static void M_ReadSaveStrings(void)
     char name[PATH_MAX+1];    // killough 3/22/98
 
     G_SaveGameName(name,sizeof(name),i);    // killough 3/22/98
-    handle = open (name, O_RDONLY | 0, 0666);
+    handle = xopen (name, O_RDONLY | 0, 0666);
     if (handle == -1)
       {
       strcpy(&savegamestrings[i][0],s_EMPTYSTRING); // Ty 03/27/98 - externalized
       LoadMenu[i].status = 0;
       continue;
       }
-    read (handle, &savegamestrings[i], SAVESTRINGSIZE);
-    close (handle);
+    xread (handle, &savegamestrings[i], SAVESTRINGSIZE);
+    xclose (handle);
     LoadMenu[i].status = 1;
     }
   }

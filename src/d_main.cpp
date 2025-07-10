@@ -639,12 +639,12 @@ OVERLAY static void CheckIWAD(const char *iwadname,GameMode_t *gmode,boolean *ha
     int handle;
 
     // Identify IWAD correctly
-    if ( (handle = open (iwadname,O_RDONLY | O_BINARY)) != -1)
+    if ( (handle = xopen (iwadname,O_RDONLY | O_BINARY)) != -1)
     {
       wadinfo_t header;
 
       // read IWAD header
-      read (handle, &header, sizeof(header));
+      xread (handle, &header, sizeof(header));
       if (strncmp(header.identification,"IWAD",4) == 0)
       {
         size_t length;
@@ -655,9 +655,9 @@ OVERLAY static void CheckIWAD(const char *iwadname,GameMode_t *gmode,boolean *ha
         header.infotableofs = LONG(header.infotableofs);
         length = header.numlumps;
         fileinfo = (filelump_t *)malloc(length*sizeof(filelump_t));
-        lseek (handle, header.infotableofs, SEEK_SET);
-        read (handle, fileinfo, length*sizeof(filelump_t));
-        close(handle);
+        xlseek (handle, header.infotableofs, SEEK_SET);
+        xread (handle, fileinfo, length*sizeof(filelump_t));
+        xclose(handle);
 
         // scan directory for levelname lumps
         while (length--)
@@ -1017,7 +1017,7 @@ OVERLAY void FindResponseFile (void)
 
         // READ THE RESPONSE FILE INTO MEMORY
         printf("fopen FindResponseFile\n");
-        handle = fopen (&myargv[i][1],"rb");
+        handle = xfopen (&myargv[i][1],"rb");
         if (!handle)
           {
             //jff 9/3/98 use logical output routine
@@ -1026,12 +1026,12 @@ OVERLAY void FindResponseFile (void)
           }
         //jff 9/3/98 use logical output routine
         lprintf(LO_CONFIRM,"Found response file %s!\n",&myargv[i][1]);
-        fseek(handle,0,SEEK_END);
-        size = ftell(handle);
-        fseek(handle,0,SEEK_SET);
+        xfseek(handle,0,SEEK_END);
+        size = xftell(handle);
+        xfseek(handle,0,SEEK_SET);
         file = (char *)malloc (size);
-        fread(file,size,1,handle);
-        fclose(handle);
+        xfread(file,size,1,handle);
+        xfclose(handle);
 
         // KEEP ALL CMDLINE ARGS FOLLOWING @RESPONSEFILE ARG
         for (index = 0,k = i+1; k < myargc; k++)

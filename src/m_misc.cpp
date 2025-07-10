@@ -97,13 +97,13 @@ OVERLAY boolean M_WriteFile(char const* name,void* source,int length)
   int handle;
   int count;
   
-  handle = open ( name, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
+  handle = xopen ( name, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
 
   if (handle == -1)
     return false;
 
-  count = write (handle, source, length);
-  close (handle);
+  count = xwrite (handle, source, length);
+  xclose (handle);
   
   if (count < length) {
     remove(name);
@@ -116,9 +116,9 @@ OVERLAY boolean M_WriteFile(char const* name,void* source,int length)
 int M_GetFileLength(int fd)
 {
   // Save off current offset.
-  off_t old = lseek(fd, 0, SEEK_CUR);
+  off_t old = xlseek(fd, 0, SEEK_CUR);
   // Get size of the file.
-  off_t end = lseek(fd, 0, SEEK_END);
+  off_t end = xlseek(fd, 0, SEEK_END);
   // Restore old offset.
   lseek(fd, old, SEEK_SET);
   return end;
