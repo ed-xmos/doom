@@ -6,9 +6,13 @@
 int offsets[NUM_HANDLES] = {0};
 char filenames[NUM_HANDLES][16] = {{0}};
 
+// #define debugprintf(...) printf(__VA_ARGS__)
+#define debugprintf(...)
+
+
 FILE* xfopen( const char* filename, const char* mode ){
 	FILE *fp_tmp;
-	printf("xfopen: %s\n", filename);
+	debugprintf("xfopen: %s\n", filename);
 	pf_open(filename);
 	int handle = (filename[0] - HANDLE_OFFSET);
 	fp_tmp = (FILE *)handle;
@@ -23,7 +27,7 @@ FILE* xfopen( const char* filename, const char* mode ){
 size_t xfread( void *buffer, size_t size, size_t count, FILE *stream ){
 // size_t xfread( void *buffer, size_t size, size_t count, int stream ){
 	UINT num_read;
-	printf("xfread size: %d handle: %p\n", size * count, stream);
+	debugprintf("xfread size: %d handle: %p\n", size * count, stream);
 	pf_read(buffer, size * count, &num_read);
 	
 	offsets[(int)stream] += size * count;
@@ -33,7 +37,7 @@ size_t xfread( void *buffer, size_t size, size_t count, FILE *stream ){
 
 int xfseek( FILE* stream, long offset, int origin ){
 // int xfseek( int stream, long offset, int origin ){
-	printf("xfseek handle: %p\n", stream);
+	debugprintf("xfseek handle: %p\n", stream);
 	int result = pf_lseek(offset);
 
 	offsets[(int)stream] = offset;
@@ -44,13 +48,13 @@ int xfseek( FILE* stream, long offset, int origin ){
 long xftell( FILE* stream ){
 // long xftell( int stream ){
 	int val = 0;
-	printf("xfread xftell steam: %p, : %d\n", stream, val);
+	debugprintf("xfread xftell steam: %p, : %d\n", stream, val);
 
 	return val;
 }
 
 int xfclose( FILE* stream ){
-	printf("xfclose handle: %p\n", stream);
+	debugprintf("xfclose handle: %p\n", stream);
 
 	return 0;
 }
@@ -61,7 +65,7 @@ int xfclose( FILE* stream ){
 
 int xopen(const char *pathname, int flags, ... /* mode_t mode */ ){
 	int fp_tmp;
-	printf("xopen: %s\n", pathname); 
+	debugprintf("xopen: %s\n", pathname); 
 	pf_open(pathname);
 	fp_tmp = pathname[0] - HANDLE_OFFSET;
 
@@ -74,7 +78,7 @@ int xopen(const char *pathname, int flags, ... /* mode_t mode */ ){
 
 size_t xread( int stream, void *buffer, size_t size){
 	UINT num_read;
-	printf("xread size: %d, handle: %d\n", size, stream);
+	debugprintf("xread size: %d, handle: %d\n", size, stream);
 
 	// HACK
 	pf_open(filenames[stream]);
@@ -89,7 +93,7 @@ size_t xread( int stream, void *buffer, size_t size){
 
 
 int xlseek( int stream, long offset, int origin ){
-	printf("xfseek handle: %d, offset: %ld\n", stream, offset);
+	debugprintf("xfseek handle: %d, offset: %ld\n", stream, offset);
 	int result = pf_lseek(offset);
 
 	offsets[stream] = offset;
@@ -98,13 +102,13 @@ int xlseek( int stream, long offset, int origin ){
 }
 
 long xtell( int stream ){
-	printf("xftell steam: %d\n", stream);
+	debugprintf("xftell steam: %d\n", stream);
 
 	return offsets[stream];
 }
 
 int xclose( int stream ){
-	printf("xfclose handle: %d\n", stream);
+	debugprintf("xfclose handle: %d\n", stream);
 
 	return 0;
 }
