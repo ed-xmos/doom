@@ -478,6 +478,10 @@ OVERLAY void R_Init (void)
   lprintf(LO_INFO, "\nR_LoadTrigTables: ");
   R_LoadTrigTables();
 #endif
+
+  // ED HACK TO GET TO THE RIGH F!!!
+  // pf_open(FIRST_ARG(__VA_ARGS__))
+
   lprintf(LO_INFO, "\nR_InitData: ");
   R_InitData();
   R_InitStatusBar();

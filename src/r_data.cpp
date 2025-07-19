@@ -719,6 +719,8 @@ OVERLAY void R_InitTranMap(int progress)
 {
   int lump = W_CheckNumForName("TRANMAP");
 
+  printf("R_InitTranMap\n");
+
   // If a tranlucency filter map lump is present, use it
 
   if (lump != -1)  // Set a pointer to the translucency filter maps.

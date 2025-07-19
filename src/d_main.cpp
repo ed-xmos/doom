@@ -565,10 +565,13 @@ OVERLAY void D_StartTitle (void)
 //         - modified to allocate & use new wadfiles array
 OVERLAY void D_AddFile (const char *file, wad_source_t source)
 {
+  printf("***D_AddFile***\n");
   wadfiles =
     (struct wadfile_info *)realloc(wadfiles, sizeof(*wadfiles)*(numwadfiles+1));
+  printf("***D_AddFile***\n");
   wadfiles[numwadfiles].name =
     AddDefaultExtension(strcpy((char *)malloc(strlen(file)+5), file), ".wad");
+  printf("***D_AddFile***\n");
   wadfiles[numwadfiles].src = source; // Ty 08/29/98
   numwadfiles++;
 }
@@ -811,7 +814,6 @@ OVERLAY static char* FindWADFile(const char* wfname, const char* ext)
   size_t	pl = strlen(wfname) + strlen(ext) + 4;
 
   for (i=0; i<10; i++) {
-    printf("opt: %d\n", i);
     char	*	p;
     const char	*	d = NULL;
     const char	*	s = NULL;
@@ -850,10 +852,17 @@ OVERLAY static char* FindWADFile(const char* wfname, const char* ext)
 #endif
     }
 
+    // TODO FIXME
+    p = (char *)wfname;
+    printf("opt: %d (%s)\n", i, p);
+
+
     p = (char *)malloc((d ? strlen(d) : 0) + (s ? strlen(s) : 0) + pl);
     sprintf(p, "%s%s%s%s%s", d ? d : "", (d && !HasTrailingSlash(d)) ? "/" : "",
                              s ? s : "", (s && !HasTrailingSlash(s)) ? "/" : "",
                              wfname);
+
+
     if (!I_FileExists(p))
       strcat(p, ext);
     
@@ -949,7 +958,7 @@ OVERLAY void IdentifyVersion (void)
 
   iwad = FindIWADFile();
 
-
+  printf("iwad - %d %p\n", *iwad, iwad);
   if (iwad && *iwad)
   {
     //jff 9/3/98 use logical output routine
@@ -983,11 +992,15 @@ OVERLAY void IdentifyVersion (void)
     if (gamemode == indetermined)
       //jff 9/3/98 use logical output routine
       lprintf(LO_WARN,"Unknown Game Version, may not work\n");
+    printf("***HERE***\n");
     D_AddFile(iwad,source_iwad);
+    printf("***HERE***\n");
     free(iwad);
+    printf("***HERE FREE***\n");
   }
   else
     I_Error("IWAD not found\n");
+
 }
 
 // killough 5/3/98: old code removed
@@ -1026,6 +1039,7 @@ OVERLAY void FindResponseFile (void)
           }
         //jff 9/3/98 use logical output routine
         lprintf(LO_CONFIRM,"Found response file %s!\n",&myargv[i][1]);
+        printf("FindResponseFile\n");
         xfseek(handle,0,SEEK_END);
         size = xftell(handle);
         xfseek(handle,0,SEEK_SET);

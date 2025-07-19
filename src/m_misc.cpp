@@ -115,6 +115,7 @@ OVERLAY boolean M_WriteFile(char const* name,void* source,int length)
 
 int M_GetFileLength(int fd)
 {
+  printf("M_GetFileLength - NOT PORTED TO FFS YET\n");
   // Save off current offset.
   off_t old = xlseek(fd, 0, SEEK_CUR);
   // Get size of the file.

@@ -337,7 +337,8 @@ uid_t stored_euid = -1;
 #endif
 
 #ifdef __XMOS__
-const char *argv[] = {"bin/doom.xe", "-iwad", "data/Doom1.WAD", "-file",  "data/boomlump.wad",  "-width",  "320",  "-height",  "200",  "-noload",  "-playdemo"};
+const char *argv[] = {"bin/doom.xe", "-iwad", "DOOM1.WAD", "-file",  "BOOMLUMP.WAD",  "-width",  "320",  "-height",  "200",  "-noload",  "-playdemo"};
+// const char *argv[] = {"bin/doom.xe", "-iwad", "data/Doom1.WAD", "-file",  "data/boomlump.wad",  "-width",  "320",  "-height",  "200",  "-noload",  "-playdemo"};
 //const char *argv[] = {"bin/doom.xe", "-iwad", "data/doom2.wad", "-file",  "data/boomlump.wad",  "-width",  "320",  "-height",  "200",  "-noload",  "-playdemo"};
 int argc = 11;
 #define main doom_main

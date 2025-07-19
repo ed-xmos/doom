@@ -33,12 +33,13 @@ int I_FileExists(const char *path)
 
 int I_FileIsReadable(const char *path)
 {
-  printf("fopen I_FileIsReadable\n");
+  printf("fopen I_FileIsReadable: %s\n", path);
+  // return 1; // HACK
 
-  FILE *fp = fopen(path, "r");
+  FILE *fp = xfopen(path, "r");
   if (!fp)
     return 0;
-  fclose(fp);
+  xfclose(fp);
   return 1;
 }
 

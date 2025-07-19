@@ -19,6 +19,7 @@
 #include "qspi_flash_storage_media.h"
 #include <quadflash.h>
 #include <QuadSpecMacros.h>
+#include "pff.h"
 
 fl_QSPIPorts qspi_flash_ports = {
   PORT_SQI_CS,
@@ -45,27 +46,96 @@ static void doom_task(int argc, char * unsafe * unsafe argv,
 }
 
 unsafe client interface fs_basic_if g_i_fs;
+FATFS fatfs;
+
+
 
 static void doom_task_fixed_args(client interface doom_display display, client interface fs_basic_if i_fs)
 {
   client interface doom_display * movable p = &display;
   doom_display_set_pointer(move(p));
 
+
   int result = 0;
   printf("Mounting filesystem...\n");
-  result = i_fs.mount();
+  // result = i_fs.mount();
+  result = pf_mount(&fatfs);
   printf("result = %d\n", result);
 
   printf("Opening file...\n");
   char filename[] = "DOOM1.WAD";
-  result = i_fs.open(filename, sizeof(filename));
+  // result = i_fs.open(filename, sizeof(filename));
+  result = pf_open(filename);
   printf("result = %d\n", result);
   
   printf("Getting file size...\n");
   size_t file_size = 0;
-  result = i_fs.size(file_size);
+  // result = i_fs.size(file_size);
+  file_size = fatfs.fsize;
   printf("size = %d result = %d\n", file_size, result);
   
+
+  const int offset = 4010000;
+  uint8_t read_data[64];
+  unsigned num_read = 0;
+  printf("Read %d bytes: ", sizeof(read_data));
+  // result = i_fs.read(read_data, sizeof(read_data), sizeof(read_data), num_read);
+  result = pf_read(read_data, sizeof(read_data), &num_read);
+  printf("result = %d, num_read = %u\n", result, num_read);
+  printf("FFS First %zu bytes:\n", num_read);
+  for (size_t i = 0; i < num_read; i++) {
+      printf("%02X ", read_data[i]);
+  }
+  printf("\n");
+
+  result = pf_lseek(offset);
+  result = pf_read(read_data, sizeof(read_data), &num_read);
+  printf("result = %d, num_read = %u\n", result, num_read);
+  printf("FFS Next %zu bytes:\n", num_read);
+  for (size_t i = 0; i < num_read; i++) {
+      printf("%02X ", read_data[i]);
+  }
+  printf("\n");
+
+  /////////////////////////////////
+  FILE * movable file = fopen("data/Doom1.WAD", "rb");
+  if (!file) {
+      perror("Failed to open file");
+      return 1;
+  }
+
+  unsigned char buffer[64];
+  size_t bytesRead = fread(buffer, 1, sizeof(buffer), file);
+  if (bytesRead != sizeof(buffer)) {
+      if (feof(file)) {
+          printf("Reached end of file after reading %zu bytes.\n", bytesRead);
+      } else {
+          perror("Failed to read file");
+          fclose(move(file));
+          return 1;
+      }
+  }
+
+  // Print the bytes in hex
+  printf("FILE First %zu bytes:\n", bytesRead);
+  for (size_t i = 0; i < bytesRead; i++) {
+      printf("%02X ", buffer[i]);
+  }
+  printf("\n");
+  fseek(file, offset, SEEK_SET);
+  bytesRead = fread(buffer, 1, sizeof(buffer), file);
+
+  // Print the bytes in hex
+  printf("FILE Next %zu bytes:\n", bytesRead);
+  for (size_t i = 0; i < bytesRead; i++) {
+      printf("%02X ", buffer[i]);
+  }
+  printf("\n");
+
+  fclose(move(file));
+
+
+
   unsafe{g_i_fs = i_fs;}
   
   unsafe{
