@@ -1,5 +1,7 @@
 #include "xfile.h"
 #include <string.h>
+#include <platform.h>
+#include <xcore/port.h>
 
 #define HANDLE_OFFSET  	66 // 'B', 'D' = 68 for filenames
 #define NUM_HANDLES 	4
@@ -11,6 +13,7 @@ char filenames[NUM_HANDLES][16] = {{0}};
 
 
 FILE* xfopen( const char* filename, const char* mode ){
+	port_enable(XS1_PORT_4C);
 	FILE *fp_tmp;
 	debugprintf("xfopen: %s\n", filename);
 	pf_open(filename);
@@ -27,10 +30,13 @@ FILE* xfopen( const char* filename, const char* mode ){
 size_t xfread( void *buffer, size_t size, size_t count, FILE *stream ){
 // size_t xfread( void *buffer, size_t size, size_t count, int stream ){
 	UINT num_read;
+	port_out(XS1_PORT_4C, 0xf);
 	debugprintf("xfread size: %d handle: %p\n", size * count, stream);
 	pf_read(buffer, size * count, &num_read);
 	
 	offsets[(int)stream] += size * count;
+
+	port_out(XS1_PORT_4C, 0x0);
 
 	return num_read;
 }
@@ -64,6 +70,7 @@ int xfclose( FILE* stream ){
 /////////////////////////
 
 int xopen(const char *pathname, int flags, ... /* mode_t mode */ ){
+	port_enable(XS1_PORT_4C);
 	int fp_tmp;
 	debugprintf("xopen: %s\n", pathname); 
 	pf_open(pathname);
@@ -78,6 +85,8 @@ int xopen(const char *pathname, int flags, ... /* mode_t mode */ ){
 
 size_t xread( int stream, void *buffer, size_t size){
 	UINT num_read;
+	port_out(XS1_PORT_4C, 0xf);
+
 	debugprintf("xread size: %d, handle: %d\n", size, stream);
 
 	// HACK
@@ -88,6 +97,7 @@ size_t xread( int stream, void *buffer, size_t size){
 
 	offsets[stream] += size;
 
+	port_out(XS1_PORT_4C, 0x0);
 	return num_read;
 }
 

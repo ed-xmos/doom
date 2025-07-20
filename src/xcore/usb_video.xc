@@ -1,5 +1,6 @@
 #include "usb_video.h"
 #include <xs1.h>
+#include <xclib.h>
 #include <stdio.h>
 
 uint8_t yuv2_frame[2 * SCREEN_WIDTH * SCREEN_HEIGHT] = {0};
@@ -7,46 +8,7 @@ unsafe{ unsigned int *unsafe img_ptr = (unsigned int *)yuv2_frame;
         uint8_t *unsafe yuv2_frame_ptr = yuv2_frame;
 }
 
-extern uint16_t framebuffer[320 * 240];
-
-static void
-output_row(unsigned short row[LCD_ROW_WORDS * 2],
-           unsigned &time)
-{
-  static int r = 0; 
-  if(++r == 200 * 100){
-    printf("Display 100 frames\n");
-    r = 0;
-  }
-}
-
-void usbv_server(client interface uint_ptr_rx rx,
-                client interface uint_ptr_tx tx,
-                chanend c_leds) {
-
-  printf("usbv_server\n");
-
-  unsigned * movable ptr = rx.pop();
-
-  unsigned time = 100;
-
-  while (1) {
-
-    time += XS1_TIMER_HZ / 30;
-
-    for (int y = 0; y < LCD_HEIGHT; y++) {
-      // partout_timed(p.lcd_hsync, LCD_HOR_PULSE_WIDTH + 1,
-      //               1 << LCD_HOR_PULSE_WIDTH, time);
-      time += LCD_HOR_BACK_PORCH;
-
-      if (!ptr)
-        ptr = rx.pop();
-      output_row((unsigned short * movable)ptr, time);
-      tx.push(move(ptr));
-      time += LCD_HOR_FRONT_PORCH;
-    }
-  }
-}
+extern uint16_t framebuffer[LCD_WIDTH * LCD_HEIGHT];
 
 
 #include "string.h"
@@ -455,25 +417,26 @@ void bgr565_pair_to_yuyv(uint16_t p0, uint16_t p1, uint8_t *dst) {
     dst[3] = v;
 }
 
-// The LCD seems to be RGB 5-6-5 but is byte swapped so this looks odd
 static inline uint16_t bgr2brg(uint16_t bgr){
     uint16_t brg = 0;
+    // The LCD seems to be RGB 5-6-5 but is byte swapped so this looks odd
     brg |= (bgr & 0xe000) >> 4; // b   
     brg |= ((bgr & 0x0700) >> 8) | ((bgr & 0x0020) << 10); // g
     brg |= (bgr & 0x0001e) << 3; // r
 
-/*    static uint16_t val = 1;
-    static int c = 0; c++; if(c == 6000000){c = 0; val <<= 1; printhexln(val); }
-    brg = val;
-*/
     return brg;
 }
 
-void buffer_rx(server interface doom_usbv_display_t i_doom_usbv_display){
+static inline uint16_t byte_swap_16b(uint16_t bgr){
+    // This works for bgr mode
+    bgr = byterev((uint32_t)bgr) >> 16;
+
+    return bgr;
+}
+
+void buffer_rx(streaming chanend doom_usbv_display){
     uint16_t palette[256] = {0};
     uint8_t frame[SCREEN_WIDTH * SCREEN_HEIGHT] = {0};
-
-    int convert_frame = 0;
 
     timer t;
     int frames_counted = 0;
@@ -482,42 +445,41 @@ void buffer_rx(server interface doom_usbv_display_t i_doom_usbv_display){
 
     while(1){
         select{
-            case i_doom_usbv_display.set_palette(const uint16_t new_palette[256]):
-                memcpy(palette, new_palette, sizeof(new_palette));
-                // printf("buffer_rx set_palette\n");
-                // convert_frame = 1;
-                break;
-            case i_doom_usbv_display.write_frame(const uint8_t new_frame[SCREEN_WIDTH * SCREEN_HEIGHT]):
-                memcpy(frame, new_frame, sizeof(new_frame));
-                // printf("buffer_rx write_frame\n");
-                convert_frame = 1;
-                break;
+            case doom_usbv_display :> int cmd:
+                switch(cmd){
+                    case DD_SET_PALETTE:
+                        sin_char_array(doom_usbv_display, (char *)palette, sizeof(palette));
+                        break;
+                    case DD_WRITE:
+                        sin_char_array(doom_usbv_display, frame, sizeof(frame));
+                        frames_counted++;
+                        int time_now;
+                        t :> time_now;
+                        if(timeafter(time_now, time_then + XS1_TIMER_HZ)){
+                            printf("FPS: %d\n", frames_counted);
+                            time_then += XS1_TIMER_HZ;
+                            frames_counted = 0;
+                        }
+                        // Convert 2 pix at a time
+                        for(int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i += 2)unsafe{
+                            uint8_t *yuv2_ptr;
+                            unsafe{yuv2_ptr = (uint8_t*)&yuv2_frame_ptr[i * 2];}
+                            uint16_t rgb1 = palette[frame[i]];
+                            uint16_t rgb2 = palette[frame[i+1]];
 
-            convert_frame => default:
-                frames_counted++;
-                int time_now;
-                t :> time_now;
-                if(timeafter(time_now, time_then + XS1_TIMER_HZ)){
-                    printf("FPS: %d\n", frames_counted);
-                    time_then += XS1_TIMER_HZ;
-                    frames_counted = 0;
-                }
-                convert_frame = 0;
-                // Convert 2 pix at a time
-                for(int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i += 2)unsafe{
-                    uint8_t *yuv2_ptr;
-                    unsafe{yuv2_ptr = (uint8_t*)&yuv2_frame_ptr[i * 2];}
-                    uint16_t rgb1 = palette[frame[i]];
-                    uint16_t rgb2 = palette[frame[i+1]];
+                            // Populate USB video buffer
+                            // bgr565_pair_to_yuyv(rgb1, rgb2, yuv2_ptr);
 
-                    bgr565_pair_to_yuyv(rgb1, rgb2, yuv2_ptr);
+                            const int offset = LCD_WIDTH * VERTICAL_OFFSET;
 
-                    framebuffer[i] = bgr2brg(palette[frame[i]]);
-                    framebuffer[i + 1] = bgr2brg(palette[frame[i + 1]]);
-
-                }
-                break;
-        }
+                            // Populate LCD buffer this is picked up via shared mem
+                            framebuffer[i + offset ] = byte_swap_16b(palette[frame[i]]);
+                            framebuffer[i + offset + 1] = byte_swap_16b(palette[frame[i + 1]]);
+                        }
+                        break;
+                } //switch
+                break; // case
+        } //select
     }
 }
 
@@ -533,7 +495,7 @@ XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
 XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_INT, XUD_EPTYPE_ISO};
 
 
-void usb_video_main(server interface doom_usbv_display_t i_doom_usbv_display) {
+void usb_video_main(streaming chanend doom_usbv_display) {
 
     chan c_ep_out[EP_COUNT_OUT], c_ep_in[EP_COUNT_IN];
 
@@ -550,6 +512,6 @@ void usb_video_main(server interface doom_usbv_display_t i_doom_usbv_display) {
 
         VideoEndpointsHandler(c_ep_in[1], c_ep_in[2]);
 
-        buffer_rx(i_doom_usbv_display);
+        buffer_rx(doom_usbv_display);
     }
 }

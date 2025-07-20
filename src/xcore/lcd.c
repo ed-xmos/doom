@@ -5,6 +5,7 @@
 #include <platform.h>
 #include "spi.h"
 #include <xcore/hwtimer.h>
+#include "doom_display.h"
 
 #define DC_PIN "DC_PIN"
 #define CS_PIN "CS_PIN"
@@ -13,8 +14,7 @@
 #define HIGH "HIGH"
 #define OUTPUT "OUTPUT"
 
-#define LCD_WIDTH   320
-#define LCD_HEIGHT  240
+
 
 spi_master_device_t *g_dev;
 
@@ -78,7 +78,7 @@ void ili9341_init() {
 
   // Memory Access Control - landscape
   tft_write_command(0x36); // MADCTL
-  tft_write_data(0xE8); // Landscape: MX, bit 3 is 1->BGR 0->RGB 
+  tft_write_data(0xE0); // Landscape: MX, bit 3 is 1->BGR 0->RGB 
 
 /*
 Portrait (0): MADCTL = 0x48

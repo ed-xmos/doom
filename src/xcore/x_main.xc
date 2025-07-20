@@ -34,35 +34,33 @@ extern "C" {
   void lcd(void);
 }
 
-static void doom_task(int argc, char * unsafe * unsafe argv,
-               client interface doom_display display)
-{
-  client interface doom_display * movable p = &display;
-  doom_display_set_pointer(move(p));
-  int status = doom_main(argc, argv);
+// static void doom_task(int argc, char * unsafe * unsafe argv,
+//                client interface doom_display display)
+// {
+//   client interface doom_display * movable p = &display;
+//   doom_display_set_pointer(move(p));
+//   int status = doom_main(argc, argv);
 
-  printf("BREXIT\n");
-  exit(status);
-}
+//   printf("BREXIT\n");
+//   exit(status);
+// }
+
+
 
 unsafe client interface fs_basic_if g_i_fs;
 FATFS fatfs;
+unsafe streaming chanend g_doom_usbv_display;
 
 
-
-static void doom_task_fixed_args(client interface doom_display display, client interface fs_basic_if i_fs)
+static void doom_task_fixed_args(streaming chanend doom_usbv_display)
 {
-  client interface doom_display * movable p = &display;
-  doom_display_set_pointer(move(p));
-
+  unsafe{g_doom_usbv_display = doom_usbv_display;}
 
   int result = 0;
   printf("Mounting filesystem...\n");
   // result = i_fs.mount();
   result = pf_mount(&fatfs);
   printf("result = %d\n", result);
-
-  unsafe{g_i_fs = i_fs;}
   
   unsafe{
     int xargc; 
@@ -74,19 +72,11 @@ static void doom_task_fixed_args(client interface doom_display display, client i
   }
 }
 
-on tile[1]: out port p_leds = XS1_PORT_32A;
-
 
 int main(void)
 // int main(int argc, char * unsafe * unsafe argv)
 {
-  interface uint_ptr_tx_slave to_buffer;
-  interface uint_ptr_rx to_lcd;
-  interface uint_ptr_tx from_lcd;
-  interface uint_ptr_rx from_buffer;
-  interface doom_display display;
-
-  interface doom_usbv_display_t i_doom_usbv_display;
+  streaming chan doom_usbv_display;
 
   interface fs_basic_if i_fs[1];
   interface fs_storage_media_if i_media;
@@ -95,12 +85,7 @@ int main(void)
     on tile[0]:
     par {
       // doom_task(argc, argv, display);
-      doom_task_fixed_args(display, i_fs[0]);
-      // uint_ptr_buffer_tx_slave(to_buffer, to_lcd);
-      // usbv_server(to_lcd, from_lcd, c_led);
-      // uint_ptr_buffer(from_lcd, from_buffer);
-      doom_display(display, to_buffer, from_buffer, i_doom_usbv_display);
-
+      doom_task_fixed_args(doom_usbv_display);
       {
         fl_QuadDeviceSpec qspi_spec = FL_QUADDEVICE_DEFAULT;
         qspi_flash_fs_media(i_media, qspi_flash_ports, qspi_spec, 512);
@@ -109,7 +94,7 @@ int main(void)
     }
     on tile[1]:
     par{
-      usb_video_main(i_doom_usbv_display);
+      usb_video_main(doom_usbv_display);
       lcd();
     }
   }

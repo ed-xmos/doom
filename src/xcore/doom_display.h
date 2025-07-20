@@ -4,34 +4,20 @@
 #include <stdint.h>
 #include "usb_video.h"
 
+// Doom settings
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 200
 #define SCREEN_BPP 8
 
-#ifdef __XC__
-interface uint_ptr_tx_slave;
-interface uint_ptr_rx;
+// Output settings
+#define LCD_WIDTH   320
+#define LCD_HEIGHT  240
 
-interface doom_display {
-  [[notification]] slave void vblank();
-  [[clears_notification]] void clear_vblank();
-  uint16_t * unsafe get_palette_();
-  uint8_t * unsafe get_frame_();
-};
+#define DD_SET_PALETTE 0
+#define DD_WRITE       1
 
-extends client interface doom_display : {
-  void set_palette(client interface doom_display self, const uint16_t new_palette[256]);
-  void write(client interface doom_display self, const uint8_t frame[SCREEN_WIDTH * SCREEN_HEIGHT]);
-  void read(client interface doom_display self, uint8_t frame[SCREEN_WIDTH * SCREEN_HEIGHT]);
-}
-
-void doom_display(server interface doom_display screen,
-                  client interface uint_ptr_tx_slave to_lcd,
-                  client interface uint_ptr_rx from_lcd,
-                  client interface doom_usbv_display_t i_doom_usbv_display);
-
-void doom_display_set_pointer(client interface doom_display * movable display);
-#endif
+#define HORIZONTAL_OFFSET ((LCD_WIDTH - SCREEN_WIDTH) / 2)
+#define VERTICAL_OFFSET ((LCD_HEIGHT - SCREEN_HEIGHT) / 2)
 
 #ifdef __cplusplus
 extern "C" {

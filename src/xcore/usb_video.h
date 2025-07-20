@@ -4,18 +4,10 @@
 #include <xs1.h>
 #include <stdint.h>
 #include "ptr_buffers.h"
-#include "usb_video_defines.h"
+#include "doom_display.h"
 
-#define SCREEN_WIDTH 320
-#define SCREEN_HEIGHT 200
-#define SCREEN_BPP 8
 
 #ifdef __XC__
-interface doom_usbv_display_t {
-  void set_palette(const uint16_t new_palette[256]);
-  void write_frame(const uint8_t frame[SCREEN_WIDTH * SCREEN_HEIGHT]);
-};
-
 
 /** \brief The USBV server thread.
  *
@@ -33,7 +25,7 @@ void VideoEndpointsHandler(chanend c_epint_in, chanend c_episo_in);
 /* Endpoint 0 handles both std USB requests and Video class-specific requests */
 void Endpoint0(chanend chan_ep0_out, chanend chan_ep0_in);
 
-void usb_video_main(server interface doom_usbv_display_t i_doom_usbv_display);
+void usb_video_main(streaming chanend doom_usbv_display);
 
 #endif // __XC__
 

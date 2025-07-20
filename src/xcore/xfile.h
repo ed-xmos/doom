@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include "pff.h"
 
-//Horrible hacks to keep track of which file is open due to petit FFS
+//Horrible hacks to keep track of which file is open due to petit FFS only having one file handle (current opened)
 
 FILE* xfopen( const char* filename, const char* mode );
 size_t xfread( void *buffer, size_t size, size_t count, FILE *stream );
