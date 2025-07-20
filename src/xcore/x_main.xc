@@ -29,9 +29,9 @@ fl_QSPIPorts qspi_flash_ports = {
 };
 
 
-
 extern "C" {
-int doom_main(int argc, char **argv);
+  int doom_main(int argc, char **argv);
+  void lcd(void);
 }
 
 static void doom_task(int argc, char * unsafe * unsafe argv,
@@ -110,6 +110,7 @@ int main(void)
     on tile[1]:
     par{
       usb_video_main(i_doom_usbv_display);
+      lcd();
     }
   }
   return 0;

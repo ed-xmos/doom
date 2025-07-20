@@ -7,7 +7,7 @@ unsafe{ unsigned int *unsafe img_ptr = (unsigned int *)yuv2_frame;
         uint8_t *unsafe yuv2_frame_ptr = yuv2_frame;
 }
 
-
+extern uint16_t framebuffer[320 * 240];
 
 static void
 output_row(unsigned short row[LCD_ROW_WORDS * 2],
@@ -455,6 +455,20 @@ void bgr565_pair_to_yuyv(uint16_t p0, uint16_t p1, uint8_t *dst) {
     dst[3] = v;
 }
 
+// The LCD seems to be RGB 5-6-5 but is byte swapped so this looks odd
+static inline uint16_t bgr2brg(uint16_t bgr){
+    uint16_t brg = 0;
+    brg |= (bgr & 0xe000) >> 4; // b   
+    brg |= ((bgr & 0x0700) >> 8) | ((bgr & 0x0020) << 10); // g
+    brg |= (bgr & 0x0001e) << 3; // r
+
+/*    static uint16_t val = 1;
+    static int c = 0; c++; if(c == 6000000){c = 0; val <<= 1; printhexln(val); }
+    brg = val;
+*/
+    return brg;
+}
+
 void buffer_rx(server interface doom_usbv_display_t i_doom_usbv_display){
     uint16_t palette[256] = {0};
     uint8_t frame[SCREEN_WIDTH * SCREEN_HEIGHT] = {0};
@@ -497,6 +511,10 @@ void buffer_rx(server interface doom_usbv_display_t i_doom_usbv_display){
                     uint16_t rgb2 = palette[frame[i+1]];
 
                     bgr565_pair_to_yuyv(rgb1, rgb2, yuv2_ptr);
+
+                    framebuffer[i] = bgr2brg(palette[frame[i]]);
+                    framebuffer[i + 1] = bgr2brg(palette[frame[i + 1]]);
+
                 }
                 break;
         }
