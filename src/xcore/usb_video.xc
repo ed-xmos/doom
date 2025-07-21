@@ -434,7 +434,7 @@ static inline uint16_t byte_swap_16b(uint16_t bgr){
     return bgr;
 }
 
-void buffer_rx(streaming chanend doom_usbv_display){
+void buffer_rx(streaming chanend doom_usbv_display, streaming chanend c_lcd_trigger){
     uint16_t palette[256] = {0};
     uint8_t frame[SCREEN_WIDTH * SCREEN_HEIGHT] = {0};
 
@@ -476,6 +476,8 @@ void buffer_rx(streaming chanend doom_usbv_display){
                             framebuffer[i + offset ] = byte_swap_16b(palette[frame[i]]);
                             framebuffer[i + offset + 1] = byte_swap_16b(palette[frame[i + 1]]);
                         }
+                        // Trigger LCD refresh
+                        c_lcd_trigger <: (char)0;
                         break;
                 } //switch
                 break; // case
@@ -495,7 +497,7 @@ XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
 XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_INT, XUD_EPTYPE_ISO};
 
 
-void usb_video_main(streaming chanend doom_usbv_display) {
+void usb_video_main(streaming chanend doom_usbv_display, streaming chanend c_lcd_trigger) {
 
     chan c_ep_out[EP_COUNT_OUT], c_ep_in[EP_COUNT_IN];
 
@@ -512,6 +514,6 @@ void usb_video_main(streaming chanend doom_usbv_display) {
 
         VideoEndpointsHandler(c_ep_in[1], c_ep_in[2]);
 
-        buffer_rx(doom_usbv_display);
+        buffer_rx(doom_usbv_display, c_lcd_trigger);
     }
 }

@@ -31,7 +31,7 @@ fl_QSPIPorts qspi_flash_ports = {
 
 extern "C" {
   int doom_main(int argc, char **argv);
-  void lcd(void);
+  void lcd(streaming chanend c_lcd_trigger);
 }
 
 // static void doom_task(int argc, char * unsafe * unsafe argv,
@@ -76,7 +76,8 @@ static void doom_task_fixed_args(streaming chanend doom_usbv_display)
 int main(void)
 // int main(int argc, char * unsafe * unsafe argv)
 {
-  streaming chan doom_usbv_display;
+  streaming chan doom_usbv_display; // From game to USB video class
+  streaming chan c_lcd_trigger;
 
   interface fs_basic_if i_fs[1];
   interface fs_storage_media_if i_media;
@@ -94,8 +95,8 @@ int main(void)
     }
     on tile[1]:
     par{
-      usb_video_main(doom_usbv_display);
-      lcd();
+      usb_video_main(doom_usbv_display, c_lcd_trigger);
+      lcd(c_lcd_trigger);
     }
   }
   return 0;

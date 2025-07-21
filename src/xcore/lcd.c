@@ -5,6 +5,7 @@
 #include <platform.h>
 #include "spi.h"
 #include <xcore/hwtimer.h>
+#include <xcore/channel_streaming.h>
 #include "doom_display.h"
 
 #define DC_PIN "DC_PIN"
@@ -133,7 +134,7 @@ uint16_t rgb565(uint8_t r, uint8_t g, uint8_t b) {
 }
 
 
-void lcd(void){
+void lcd(chanend_t c_lcd_trigger){
   port_enable(p_dc_rst);
 
   spi_master_t spi_mstr;
@@ -154,5 +155,6 @@ void lcd(void){
 
   while(1){
     copy_framebuffer_to_ili9341(framebuffer);
+    s_chan_in_byte(c_lcd_trigger); // Hold off until we get a token
   }
 }
