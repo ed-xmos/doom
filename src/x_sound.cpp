@@ -9,6 +9,9 @@
 
 #define NUM_CHANNELS		8
 
+
+static void *music[2] = { NULL, NULL };
+
 int snd_card = 1;
 int mus_card = 1;
 int detect_voices = 0;
@@ -75,56 +78,82 @@ I_UpdateSoundParams
 
 void I_ShutdownSound(void)
 {
+  printf("I_ShutdownSound\n");
   //__builtin_trap();
 }
 
-void
-I_InitSound()
+void I_InitSound()
 {
+  printf("I_InitSound\n");
   //__builtin_trap();
 }
 
 void I_ShutdownMusic(void) 
 {
+  printf("I_ShutdownMusic\n");
   //__builtin_trap();
 }
 
 void I_InitMusic(void)
 {
+  printf("I_InitMusic\n");
   //__builtin_trap();
 }
 
 void I_PlaySong(int handle, int looping)
 {
+  printf("I_PlaySong handle: %d looping: %d\n", handle, looping);
   //__builtin_trap();
 }
 
 void I_PauseSong (int handle)
 {
+  printf("I_PauseSong handle: %d \n", handle);
   //__builtin_trap();
 }
 
 void I_ResumeSong (int handle)
 {
+  printf("I_ResumeSong handle: %d \n", handle);
   //__builtin_trap();
 }
 
 void I_StopSong(int handle)
 {
+  printf("I_StopSong handle: %d \n", handle);
   //__builtin_trap();
 }
 
 void I_UnRegisterSong(int handle)
 {
+  printf("I_UnRegisterSong handle: %d \n", handle);
   //__builtin_trap();
 }
 
 int I_RegisterSong(const void *data, size_t len)
 {
+  printf("I_RegisterSong  len: %d\n", len);
+
+  /* Convert MUS chunk to MIDI? */
+  if ( memcmp(data, "MUS", 3) == 0 ) {
+    printf("ISMUS\n");
+    // qmus2mid(data, len, midfile, 1, 0, 0, 0);
+  } else {
+    printf("ISMIDI\n");
+    // fwrite(data, len, 1, midfile);
+  }
+
+  // music[0] = Mix_LoadMUS(MIDI_TMPFILE);
+  music[0] = 0;
+  if ( music[0] == NULL ) {
+    printf("Couldn't convert MIDI file\n");
+  }
+
   return 0;
 }
 
 void I_SetMusicVolume(int volume)
 {
+  printf("I_SetMusicVolume volume: %d\n", volume);
   //__builtin_trap();
 }

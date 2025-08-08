@@ -31,6 +31,8 @@
  *-----------------------------------------------------------------------------*/
 
 #include "compiler.h"
+#undef OVERLAY
+#define OVERLAY
 #include "doomstat.h"
 #include "w_wad.h"
 #include "r_main.h"

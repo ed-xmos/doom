@@ -33,6 +33,9 @@
 
 // killough 5/2/98: fixed headers, removed rendunant external declarations:
 #include "compiler.h"
+
+#undef OVERLAY
+#define OVERLAY
 #include "doomdef.h"
 #include "doomstat.h"
 #include "doomtype.h"

@@ -40,6 +40,8 @@
 #endif
 
 #include "compiler.h"
+#undef OVERLAY
+#define OVERLAY
 #include "doomstat.h"
 #include "f_finale.h"
 #include "m_argv.h"

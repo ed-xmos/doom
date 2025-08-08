@@ -592,6 +592,7 @@ static SDL_AudioSpec audio;
 void
 I_InitSound()
 { 
+  printf("I_InitSound\n");
   int i;
   
   // Secure and configure sound device first.

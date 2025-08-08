@@ -1,3 +1,7 @@
 .build
 *.o
 *.P
+bin/doom.xe
+bin/ffs_image.img
+data/doom2.wad
+.DS_Store

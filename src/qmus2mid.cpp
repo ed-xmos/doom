@@ -30,6 +30,52 @@
 #include "qmus2mid.h"
 #include "lprintf.h"
 
+
+///////////////////////
+typedef struct {
+    uint8_t *buffer;
+    size_t size;
+    size_t capacity;
+    size_t position;
+} MemFile;
+
+int mem_write(MemFile *mf, const void *data, size_t len) {
+    if (mf->position + len > mf->capacity)
+        return -1; // overflow
+
+    memcpy(&mf->buffer[mf->position], data, len);
+    mf->position += len;
+    if (mf->position > mf->size)
+        mf->size = mf->position;
+    return 0;
+}
+
+int mem_read(MemFile *mf, void *data, size_t len) {
+    if (mf->position + len > mf->size)
+        return -1; // underflow
+
+    memcpy(data, &mf->buffer[mf->position], len);
+    mf->position += len;
+    return 0;
+}
+
+int mem_seek(MemFile *mf, size_t pos) {
+    if (pos > mf->size) return -1;
+    mf->position = pos;
+    return 0;
+}
+
+size_t mem_fwrite(const void *ptr, size_t size, size_t nmemb, MemFile *mf) {
+    return (mem_write(mf, ptr, size * nmemb) == 0) ? nmemb : 0;
+}
+
+size_t mem_fread(void *ptr, size_t size, size_t nmemb, MemFile *mf) {
+    return (mem_read(mf, ptr, size * nmemb) == 0) ? nmemb : 0;
+}
+
+///////////////////////
+
+
 int4 TRACKBUFFERSIZE = 65536L ;  /* 64 Ko */
 
 typedef struct {
