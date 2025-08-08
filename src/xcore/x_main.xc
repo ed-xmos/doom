@@ -20,6 +20,7 @@
 #include <quadflash.h>
 #include <QuadSpecMacros.h>
 #include "pff.h"
+#include "xk_evk_xu316/board.h"
 
 fl_QSPIPorts qspi_flash_ports = {
   PORT_SQI_CS,
@@ -32,7 +33,10 @@ fl_QSPIPorts qspi_flash_ports = {
 extern "C" {
   int doom_main(int argc, char **argv);
   void lcd(streaming chanend c_lcd_trigger);
+  void audio_subsystem(chanend c_i2c, streaming chanend c_audio);
 }
+extern void lcd_renderer(streaming chanend doom_usbv_display, streaming chanend c_lcd_trigger);
+
 
 // static void doom_task(int argc, char * unsafe * unsafe argv,
 //                client interface doom_display display)
@@ -50,11 +54,16 @@ extern "C" {
 unsafe client interface fs_basic_if g_i_fs;
 FATFS fatfs;
 unsafe streaming chanend g_doom_usbv_display;
+unsafe streaming chanend g_c_audio;
 
 
-static void doom_task_fixed_args(streaming chanend doom_usbv_display)
+static void doom_task_fixed_args( streaming chanend doom_usbv_display,
+                                  streaming chanend c_audio)
 {
-  unsafe{g_doom_usbv_display = doom_usbv_display;}
+  unsafe{
+    g_doom_usbv_display = doom_usbv_display;
+    g_c_audio = c_audio;
+  }
 
   int result = 0;
   printf("Mounting filesystem...\n");
@@ -78,6 +87,8 @@ int main(void)
 {
   streaming chan doom_usbv_display; // From game to USB video class
   streaming chan c_lcd_trigger;
+  streaming chan c_audio;
+  chan c_i2c;
 
   interface fs_basic_if i_fs[1];
   interface fs_storage_media_if i_media;
@@ -86,17 +97,21 @@ int main(void)
     on tile[0]:
     par {
       // doom_task(argc, argv, display);
-      doom_task_fixed_args(doom_usbv_display);
+      doom_task_fixed_args(doom_usbv_display, c_audio);
       {
         fl_QuadDeviceSpec qspi_spec = FL_QUADDEVICE_DEFAULT;
         qspi_flash_fs_media(i_media, qspi_flash_ports, qspi_spec, 512);
       }
       filesystem_basic(i_fs, 1, FS_FORMAT_FAT12, i_media);
+      // xk_evk_xu316_AudioHwRemote(c_i2c); // Startup remote I2C master server task
+
     }
     on tile[1]:
     par{
-      usb_video_main(doom_usbv_display, c_lcd_trigger);
+      lcd_renderer(doom_usbv_display, c_lcd_trigger);
+      // usb_video_main(doom_usbv_display, c_lcd_trigger);
       lcd(c_lcd_trigger);
+      audio_subsystem(c_i2c, c_audio);
     }
   }
   return 0;

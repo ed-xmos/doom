@@ -3,7 +3,6 @@
 
 #include <xs1.h>
 #include <stdint.h>
-#include "ptr_buffers.h"
 #include "doom_display.h"
 
 

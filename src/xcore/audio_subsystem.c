@@ -8,12 +8,13 @@
 #include <xs1.h>
 #include <xcore/assert.h>
 #include <xcore/channel.h>
+#include <xcore/channel_streaming.h>
 #include <xcore/hwtimer.h>
 #include <xcore/select.h>
 #include <platform.h>
 #include <math.h>
 
-#include "app_config.h"
+#include "app_audio_config.h"
 #include "i2s.h"
 #include "spi.h"
 #include "xk_evk_xu316/board.h"
@@ -21,6 +22,7 @@
 #define TML_IMPLEMENTATION
 #include "tml.h"
 #include "midi_msg.h"
+#include "doom_audio.h"
 
 
 // Holds global MIDI playback state
@@ -183,6 +185,30 @@ void i2s_task(chanend_t c_midi_pcm, chanend_t c_i2c){
 }
 
 
+DECLARE_JOB(sound_dispatcher, (chanend_t));
+void sound_dispatcher(chanend_t c_audio){
+    uint8_t midi_track[MAX_MIDI_TRACK_SIZE] = {0};
+
+    while(1){
+        int cmd = s_chan_in_word(c_audio);
+
+        switch(cmd){
+            case DA_REGISTER_SONG:{
+                size_t len = s_chan_in_word(c_audio);
+                printf("DA_REGISTER_SONG: %d\n", len);
+                s_chan_in_buf_byte(c_audio, midi_track, len);
+                break;
+            }
+            case DA_PLAY_SONG:{
+                int handle = s_chan_in_word(c_audio);
+                int looping = s_chan_in_word(c_audio);
+                printf("DA_PLAY_SONG: %d %d\n", handle, looping);
+                break;
+            }
+        }
+    }
+}
+
 DECLARE_JOB(play_midi, (chanend_t));
 void play_midi(chanend_t c_midi_msg){
     
@@ -195,13 +221,13 @@ void play_midi(chanend_t c_midi_msg){
     printf("Loading MIDI...\n");
     char filename[] = "LEVEL1.MID";
     // char filename[] = "IMPERIAL.MID";
-    uint8_t midi_track[32768] = {0};
+    uint8_t midi_track[MAX_MIDI_TRACK_SIZE] = {0};
     // int result = xfopen(filename);
     // if(result){
     //     fprintf(stderr, "Could not open file %s\n", filename);
     //     exit(1);
     // }
-    size_t midi_size = xfsize();
+    // size_t midi_size = xfsize();
     // printf("Reading %d bytes\n", midi_size);
     // size_t num_read = xfread(midi_track, midi_size);
     // if(num_read != midi_size){
@@ -209,6 +235,7 @@ void play_midi(chanend_t c_midi_msg){
     //     exit(1);
     // }
 
+    int midi_size = 0;
     while(1);
 
     TinyMidiLoader = tml_load_memory(midi_track, midi_size);
@@ -294,7 +321,8 @@ void play_midi(chanend_t c_midi_msg){
     printf("Done\n");
 }
 
-void io_subsystem(chanend_t c_i2c)
+void audio_subsystem(chanend_t c_i2c,
+                     chanend_t c_audio)
 {
     channel_t c_midi_pcm = chan_alloc();
     channel_t c_midi_msg = chan_alloc();
@@ -302,6 +330,7 @@ void io_subsystem(chanend_t c_i2c)
 
     PAR_JOBS(PJOB(render_midi_wrapper, (c_midi_pcm.end_a, c_midi_msg.end_b)),
              PJOB(play_midi, (c_midi_msg.end_a)),
-             PJOB(i2s_task, (c_midi_pcm.end_b, c_i2c)));
+             PJOB(i2s_task, (c_midi_pcm.end_b, c_i2c)),
+             PJOB(sound_dispatcher, (c_audio)));
 
 }

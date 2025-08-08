@@ -6,6 +6,7 @@
 #include "w_wad.h"
 #include <stddef.h>
 #include <stdio.h>
+#include "doom_audio.h"
 
 #define NUM_CHANNELS		8
 
@@ -30,12 +31,12 @@ int*		channelrightvol_lookup[NUM_CHANNELS];
 
 void I_SetChannels()
 {
-  //__builtin_trap();
+  printf("I_SetChannels\n");
 }	
 
 void I_SetSfxVolume(int volume)
 {
-  //__builtin_trap();
+  printf("I_SetSfxVolume: %d \n", volume);
 }
 
 int I_GetSfxLumpNum(sfxinfo_t* sfx)
@@ -58,11 +59,12 @@ I_StartSound
 
 void I_StopSound (int handle)
 {
-  //__builtin_trap();
+  printf("I_StopSound: %d \n", handle);
 }
 
 boolean I_SoundIsPlaying(int handle)
 {
+  printf("I_SoundIsPlaying: %d \n", handle);
   return 0;
 }
 
@@ -102,8 +104,7 @@ void I_InitMusic(void)
 
 void I_PlaySong(int handle, int looping)
 {
-  printf("I_PlaySong handle: %d looping: %d\n", handle, looping);
-  //__builtin_trap();
+  doom_audio_play_song(handle, looping);
 }
 
 void I_PauseSong (int handle)
@@ -132,22 +133,7 @@ void I_UnRegisterSong(int handle)
 
 int I_RegisterSong(const void *data, size_t len)
 {
-  printf("I_RegisterSong  len: %d\n", len);
-
-  /* Convert MUS chunk to MIDI? */
-  if ( memcmp(data, "MUS", 3) == 0 ) {
-    printf("ISMUS\n");
-    // qmus2mid(data, len, midfile, 1, 0, 0, 0);
-  } else {
-    printf("ISMIDI\n");
-    // fwrite(data, len, 1, midfile);
-  }
-
-  // music[0] = Mix_LoadMUS(MIDI_TMPFILE);
-  music[0] = 0;
-  if ( music[0] == NULL ) {
-    printf("Couldn't convert MIDI file\n");
-  }
+  doom_audio_register_song((uint8_t *)data, len);
 
   return 0;
 }
