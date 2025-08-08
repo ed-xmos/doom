@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include "pff.h"
+#include "xfile.h"
 
 //Horrible hacks to keep track of which file is open due to petit FFS only having one file handle (current opened)
 
@@ -11,6 +12,8 @@ size_t xfread( void *buffer, size_t size, size_t count, FILE *stream );
 int xfseek( FILE* stream, long offset, int origin );
 long xftell( FILE* stream );
 int xfclose( FILE* stream );
+size_t xfsize(void);
+
 
 /////////////////////////////
 

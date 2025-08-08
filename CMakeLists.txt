@@ -29,6 +29,9 @@ set(APP_COMPILER_FLAGS      -Os
                             -fno-exceptions
                             )
 
+set(APP_COMPILER_FLAGS_xmidi.cpp -Os -std=c++14)
+
+
 set(APP_XSCOPE_SRCS         src/config.xscope)
 
 set(XMOS_SANDBOX_DIR        ${CMAKE_CURRENT_LIST_DIR}/..)

@@ -13,6 +13,7 @@
 #define LCD_WIDTH   320
 #define LCD_HEIGHT  240
 
+// commands to LCD
 #define DD_SET_PALETTE 0
 #define DD_WRITE       1
 
