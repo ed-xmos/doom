@@ -103,7 +103,7 @@ int main(void)
         qspi_flash_fs_media(i_media, qspi_flash_ports, qspi_spec, 512);
       }
       filesystem_basic(i_fs, 1, FS_FORMAT_FAT12, i_media);
-      // xk_evk_xu316_AudioHwRemote(c_i2c); // Startup remote I2C master server task
+      xk_evk_xu316_AudioHwRemote(c_i2c); // Startup remote I2C master server task
 
     }
     on tile[1]:

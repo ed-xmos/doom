@@ -48,7 +48,8 @@ int I_IsATerminal(int fd)
   return 0;
 }
 
-#define HEAP_MB 2.5 // 2.3 seems to be around min for time demo
+// #define HEAP_MB 2.5 // 2.3 seems to be around min for time demo
+#define HEAP_MB 4 // qmus2mid needs a MB
 
 EXTMEMD static byte heap[(unsigned)(HEAP_MB*1024*1024)];
 

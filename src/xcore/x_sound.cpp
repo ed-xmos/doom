@@ -11,8 +11,6 @@
 #define NUM_CHANNELS		8
 
 
-static void *music[2] = { NULL, NULL };
-
 int snd_card = 1;
 int mus_card = 1;
 int detect_voices = 0;
@@ -109,33 +107,32 @@ void I_PlaySong(int handle, int looping)
 
 void I_PauseSong (int handle)
 {
-  printf("I_PauseSong handle: %d \n", handle);
-  //__builtin_trap();
+  // printf("I_PauseSong handle: %d \n", handle);
+  doom_audio_pause_song(handle);
 }
 
 void I_ResumeSong (int handle)
 {
-  printf("I_ResumeSong handle: %d \n", handle);
-  //__builtin_trap();
+  // printf("I_ResumeSong handle: %d \n", handle);
+  doom_audio_resume_song(handle);
 }
 
 void I_StopSong(int handle)
 {
-  printf("I_StopSong handle: %d \n", handle);
-  //__builtin_trap();
+  // printf("I_StopSong handle: %d \n", handle);
+  doom_audio_stop_song(handle);
 }
 
 void I_UnRegisterSong(int handle)
 {
-  printf("I_UnRegisterSong handle: %d \n", handle);
-  //__builtin_trap();
+  // printf("I_UnRegisterSong handle: %d \n", handle);
+  doom_audio_unregister_song(handle);
 }
 
 int I_RegisterSong(const void *data, size_t len)
 {
-  doom_audio_register_song((uint8_t *)data, len);
-
-  return 0;
+  int handle = doom_audio_register_song((uint8_t *)data, len);
+  return handle;
 }
 
 void I_SetMusicVolume(int volume)
