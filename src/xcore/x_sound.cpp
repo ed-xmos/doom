@@ -218,6 +218,7 @@ getsfx
 //
 // This function currently supports only 16bit.
 //
+extern "C" {
 void I_UpdateSound(void *unused, uint8_t *stream, int len)
 {
   printf("I_UpdateSound SDL: %d\n", len);
@@ -312,6 +313,7 @@ void I_UpdateSound(void *unused, uint8_t *stream, int len)
   rightout += step;
     }
 }
+} // extern C
 
 void I_ShutdownSound(void)
 {

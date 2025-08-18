@@ -24,7 +24,7 @@ fl_QSPIPorts qspi_flash_ports = {
 extern "C" {
   int doom_main(int argc, char **argv);
   void lcd(streaming chanend c_lcd_trigger);
-  void audio_subsystem(chanend c_i2c, streaming chanend c_audio);
+  void audio_subsystem(chanend c_i2c, streaming chanend c_midi_app, streaming chanend c_pcm_app);
 }
 extern void lcd_renderer(streaming chanend doom_usbv_display, streaming chanend c_lcd_trigger);
 
@@ -45,15 +45,18 @@ extern void lcd_renderer(streaming chanend doom_usbv_display, streaming chanend 
 unsafe client interface fs_basic_if g_i_fs;
 FATFS fatfs;
 unsafe streaming chanend g_doom_usbv_display;
-unsafe streaming chanend g_c_audio;
+unsafe streaming chanend g_c_midi_app;
+unsafe streaming chanend g_c_pcm_app;
 
 
 static void doom_task_fixed_args( streaming chanend doom_usbv_display,
-                                  streaming chanend c_audio)
+                                  streaming chanend c_midi_app,
+                                  streaming chanend c_pcm_app)
 {
   unsafe{
     g_doom_usbv_display = doom_usbv_display;
-    g_c_audio = c_audio;
+    g_c_midi_app = c_midi_app;
+    g_c_pcm_app = c_pcm_app;
   }
 
   int result = 0;
@@ -76,19 +79,23 @@ static void doom_task_fixed_args( streaming chanend doom_usbv_display,
 int main(void)
 // int main(int argc, char * unsafe * unsafe argv)
 {
+  // cross tile
   streaming chan doom_usbv_display; // From game to USB video class
-  streaming chan c_lcd_trigger;
-  streaming chan c_audio;
+  streaming chan c_midi_app;
+  streaming chan c_pcm_app;
   chan c_i2c;
 
+  // Intra-tile or stubs
   interface fs_basic_if i_fs[1];
   interface fs_storage_media_if i_media;
+  streaming chan c_lcd_trigger;
+
 
   par {
     on tile[0]:
     par {
       // doom_task(argc, argv, display);
-      doom_task_fixed_args(doom_usbv_display, c_audio);
+      doom_task_fixed_args(doom_usbv_display, c_midi_app, c_pcm_app);
       {
         fl_QuadDeviceSpec qspi_spec = FL_QUADDEVICE_DEFAULT;
         qspi_flash_fs_media(i_media, qspi_flash_ports, qspi_spec, 512);
@@ -102,7 +109,7 @@ int main(void)
       lcd_renderer(doom_usbv_display, c_lcd_trigger);
       // usb_video_main(doom_usbv_display, c_lcd_trigger);
       lcd(c_lcd_trigger);
-      audio_subsystem(c_i2c, c_audio);
+      audio_subsystem(c_i2c, c_midi_app, c_pcm_app);
     }
   }
   return 0;

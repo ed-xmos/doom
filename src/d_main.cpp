@@ -71,6 +71,7 @@
 #include "d_deh.h"  // Ty 04/08/98 - Externalizations
 #include "lprintf.h"  // jff 08/03/98 - declaration of lprintf
 #include "am_map.h"
+#include "doom_audio.h"
 
 #ifdef __XMOS__
 #define mkdir(a, b) 0
@@ -388,9 +389,11 @@ OVERLAY static void D_DoomLoop(void)
 
       // CPhipps - auto screenshot
       if (auto_shot_fname && !--auto_shot_count) {
-	auto_shot_count = auto_shot_time;
-	M_DoScreenShot(auto_shot_fname);
+      	auto_shot_count = auto_shot_time;
+      	M_DoScreenShot(auto_shot_fname);
       }
+      // Will poll for new samples request and send if needed
+      doom_audio_send_pcm_sample_buffer();
     }
 }
 

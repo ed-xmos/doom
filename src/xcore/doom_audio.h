@@ -13,6 +13,7 @@ void doom_audio_pause_song(int handle);
 void doom_audio_resume_song(int handle);
 void doom_audio_stop_song(int handle);
 void doom_audio_unregister_song(int handle);
+void doom_audio_send_pcm_sample_buffer(void);
 #ifdef __cplusplus
 }
 #endif

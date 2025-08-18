@@ -179,75 +179,88 @@ size_t midi_size[NUM_MIDI_TRACKS] = {0};
 uint8_t midi_data[NUM_MIDI_TRACKS][MAX_MIDI_TRACK_SIZE] = {{0}};
 int midi_register_handle = 0;
 
-DECLARE_JOB(sound_dispatcher, (chanend_t, chanend_t));
-void sound_dispatcher(chanend_t c_audio, chanend_t c_midi_track){
+DECLARE_JOB(sound_dispatcher, (chanend_t, chanend_t, chanend_t));
+void sound_dispatcher(chanend_t c_midi_app, chanend_t c_midi_track, chanend_t c_pcm_app){
     uint8_t mus_data[MAX_MIDI_TRACK_SIZE] = {0};
 
     while(1){
-        int cmd = s_chan_in_word(c_audio);
+        // Non-blocking read to wait for pointer to samples
+        SELECT_RES(
+            CASE_THEN(c_midi_app, midi_incoming)
+        )
+        {
+            midi_incoming:
+            {
+                s_chan_out_word(c_pcm_app, 0); // TEMP
 
-        switch(cmd){
-            case DA_REGISTER_SONG:{
-                size_t mus_len = s_chan_in_word(c_audio);
-                printf("DA_REGISTER_SONG handle: %d len: %d\n", midi_register_handle, mus_len);
-                s_chan_in_buf_byte(c_audio, mus_data, mus_len);
+                int cmd = s_chan_in_word(c_midi_app);
 
-                for(int i = 0; i < 16; i++)printf("0x%x, ", mus_data[i]);
-                printf("\n");
+                switch(cmd){
+                    case DA_REGISTER_SONG:{
+                        size_t mus_len = s_chan_in_word(c_midi_app);
+                        printf("DA_REGISTER_SONG handle: %d len: %d\n", midi_register_handle, mus_len);
+                        s_chan_in_buf_byte(c_midi_app, mus_data, mus_len);
 
-                midi_size[midi_register_handle] = ProduceMIDIToBuffer(mus_data, mus_len, midi_data[midi_register_handle], MAX_MIDI_TRACK_SIZE);
+                        for(int i = 0; i < 16; i++)printf("0x%x, ", mus_data[i]);
+                        printf("\n");
 
-                // ACK to say done and return handle
-                s_chan_out_word(c_audio, midi_register_handle);
+                        midi_size[midi_register_handle] = ProduceMIDIToBuffer(mus_data, mus_len, midi_data[midi_register_handle], MAX_MIDI_TRACK_SIZE);
 
-                if(++midi_register_handle == NUM_MIDI_TRACKS){
-                    midi_register_handle = 0;
-                }
+                        // ACK to say done and return handle
+                        s_chan_out_word(c_midi_app, midi_register_handle);
 
-                if(midi_size > 0) {
-                    printf("MIDI converted!\n");
-                }
+                        if(++midi_register_handle == NUM_MIDI_TRACKS){
+                            midi_register_handle = 0;
+                        }
 
-                break;
+                        if(midi_size > 0) {
+                            printf("MIDI converted!\n");
+                        }
+
+                        break;
+                    }
+                    case DA_PLAY_SONG:{
+                        int handle = s_chan_in_word(c_midi_app);
+                        int looping = s_chan_in_word(c_midi_app);
+                        printf("DA_PLAY_SONG: %d %d\n", handle, looping);
+                        chan_out_word(c_midi_track, handle);
+                        chan_out_word(c_midi_track, looping);
+
+                        break;
+                    }
+
+                    case DA_PAUSE_SONG:{
+                        int handle = s_chan_in_word(c_midi_app);
+                        printf("DA_PAUSE_SONG: %d\n", handle);
+                
+                        break;
+                    }
+                
+                    case DA_RESUME_SONG:{
+                        int handle = s_chan_in_word(c_midi_app);
+                        printf("DA_RESUME_SONG: %d\n", handle);
+                
+                        break;
+                    }
+                
+                    case DA_STOP_SONG:{
+                        int handle = s_chan_in_word(c_midi_app);
+                        printf("DA_STOP_SONG: %d\n", handle);
+                
+                        break;
+                    }
+                
+                    case DA_UNREGISTER_SONG:{
+                        int handle = s_chan_in_word(c_midi_app);
+                        printf("DA_UNREGISTER_SONG: %d\n", handle);
+                
+                        break;
+                    }
+                } // switch
             }
-            case DA_PLAY_SONG:{
-                int handle = s_chan_in_word(c_audio);
-                int looping = s_chan_in_word(c_audio);
-                printf("DA_PLAY_SONG: %d %d\n", handle, looping);
-                chan_out_word(c_midi_track, handle);
-                chan_out_word(c_midi_track, looping);
+            break; // select case
 
-                break;
-            }
-
-            case DA_PAUSE_SONG:{
-                int handle = s_chan_in_word(c_audio);
-                printf("DA_PAUSE_SONG: %d\n", handle);
-  
-                break;
-            }
-  
-            case DA_RESUME_SONG:{
-                int handle = s_chan_in_word(c_audio);
-                printf("DA_RESUME_SONG: %d\n", handle);
-  
-                break;
-            }
-  
-            case DA_STOP_SONG:{
-                int handle = s_chan_in_word(c_audio);
-                printf("DA_STOP_SONG: %d\n", handle);
-  
-                break;
-            }
-  
-            case DA_UNREGISTER_SONG:{
-                int handle = s_chan_in_word(c_audio);
-                printf("DA_UNREGISTER_SONG: %d\n", handle);
-  
-                break;
-            }
-        }
+        } //select
     }
 }
 
@@ -382,7 +395,8 @@ void midi_sequencer(chanend_t c_midi_msg, chanend_t c_midi_track){
 }
 
 void audio_subsystem(chanend_t c_i2c,
-                     chanend_t c_audio)
+                     chanend_t c_midi_app,
+                     chanend_t c_pcm_app)
 {
     channel_t c_midi_pcm = chan_alloc();
     channel_t c_midi_msg = chan_alloc();
@@ -392,6 +406,6 @@ void audio_subsystem(chanend_t c_i2c,
     PAR_JOBS(PJOB(render_midi_wrapper, (c_midi_pcm.end_a, c_midi_msg.end_b)),
              PJOB(midi_sequencer, (c_midi_msg.end_a, c_midi_track.end_a)),
              PJOB(i2s_task, (c_midi_pcm.end_b, c_i2c)),
-             PJOB(sound_dispatcher, (c_audio, c_midi_track.end_b)));
+             PJOB(sound_dispatcher, (c_midi_app, c_midi_track.end_b, c_pcm_app)));
 
 }
