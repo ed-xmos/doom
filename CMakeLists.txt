@@ -30,6 +30,9 @@ set(APP_COMPILER_FLAGS      -Os
                             )
 
 set(APP_COMPILER_FLAGS_xmidi.cpp -Os -std=c++14)
+set(APP_COMPILER_FLAGS_MD_MIDITrack.cpp -Os -std=c++14)
+set(APP_COMPILER_FLAGS_MD_MIDIHelper.cpp -Os -std=c++14)
+set(APP_COMPILER_FLAGS_MD_MIDIFile.cpp -Os -std=c++14)
 
 
 set(APP_XSCOPE_SRCS         src/config.xscope)
@@ -81,7 +84,8 @@ set(APP_INCLUDES            src
                             ../lib_filesystem/lib_filesystem/src/file_systems/fatfs
                             ../lib_filesystem/lib_filesystem/src/file_systems/petit_fatfs
                             ../arduino-midi-sound-module/arduino-midi-sound-module
-                            ../arduino-midi-sound-module/arduino-midi-sound-module/emscripten )
+                            ../arduino-midi-sound-module/arduino-midi-sound-module/emscripten
+                            )
 
 glob_relative(APP_XC_SRCS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/src/*.xc)
 glob_relative(APP_C_SRCS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c)
@@ -92,7 +96,8 @@ glob_relative(FFS_XC_SRCS ${CMAKE_CURRENT_SOURCE_DIR} "${XMOS_SANDBOX_DIR}/lib_f
 glob_relative(FFS_C_SRCS ${CMAKE_CURRENT_SOURCE_DIR} "${XMOS_SANDBOX_DIR}/lib_filesystem/lib_filesystem/src/*.c")
 
 # Glob source CPP MIDI files
-set(MIDI_CXX_SRCS ../arduino-midi-sound-module/arduino-midi-sound-module/emscripten/avr/mocks.cpp)
+set(MIDI_CXX_SRCS ../arduino-midi-sound-module/arduino-midi-sound-module/emscripten/avr/mocks.cpp
+                  )
 
 list(APPEND APP_XC_SRCS ${FFS_XC_SRCS})
 list(APPEND APP_C_SRCS ${FFS_C_SRCS})
@@ -105,16 +110,20 @@ set(EXCLUDE_FILES
     "src/l_udp.cpp"
     "src/l_sound_sdl.cpp"
     "src/d_server.cpp"
+    "src/qmus2mid.c"
 )
 
 # Remove excluded files from ALL_SOURCES
 foreach(EXCLUDE_FILE ${EXCLUDE_FILES})
     list(REMOVE_ITEM APP_CXX_SRCS ${EXCLUDE_FILE})
 endforeach()
+foreach(EXCLUDE_FILE ${EXCLUDE_FILES})
+    list(REMOVE_ITEM APP_C_SRCS ${EXCLUDE_FILE})
+endforeach()
 
-message(STATUS ${APP_XC_SRCS})
-message(STATUS ${APP_C_SRCS})
-message(STATUS ${APP_CXX_SRCS})
+# message(STATUS ${APP_XC_SRCS})
+# message(STATUS ${APP_C_SRCS})
+# message(STATUS ${APP_CXX_SRCS})
 
 #Fetch I2S and SPI from fwk_io
 set(XMOS_DEP_DIR_i2s ${XMOS_SANDBOX_DIR}/fwk_io/modules)

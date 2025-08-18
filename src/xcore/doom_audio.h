@@ -2,6 +2,7 @@
 #define _doom_audio_h_
 
 #include <stdint.h>
+#include "app_audio_config.h"
 
 #ifdef __cplusplus
 extern "C" {

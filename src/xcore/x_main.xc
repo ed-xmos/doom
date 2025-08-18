@@ -5,15 +5,6 @@
 #include "usb_video.h"
 #include "doom_display.h"
 
-// lcd_ports ports = {
-//   XS1_PORT_1G, /* clk */
-//   XS1_PORT_1F, /* de */
-//   XS1_PORT_16A, /* data */
-//   XS1_PORT_1B, /* hsync */
-//   XS1_PORT_1C, /* vsync */
-//   XS1_CLKBLK_1
-// };
-
 //FFS
 #include "filesystem.h"
 #include "qspi_flash_storage_media.h"

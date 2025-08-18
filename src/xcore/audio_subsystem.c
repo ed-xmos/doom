@@ -75,13 +75,6 @@ I2S_CALLBACK_ATTR
 static void i2s_send(void *app_data, size_t num_out, int32_t *i2s_sample_buf){
     i2s_callback_args_t *cb_args = app_data;
 
-    // Sine left
-    // i2s_sample_buf[0] = cb_args->samples[0][cb_args->table_idx];
-    // if(++cb_args->table_idx == N_SINE){
-    //     cb_args->table_idx = 0;
-    // }
-
-
     static int counter = 0;
 
     // Non-blocking read to wait for pointer to samples
@@ -274,10 +267,12 @@ void midi_sequencer(chanend_t c_midi_msg, chanend_t c_midi_track){
     while(1){
         printf("MIDI loading handle %d size: %d\n", midi_handle, midi_size[midi_handle]);
 
+#if WRITE_MIDI_FILE
         FILE *write_ptr;
         write_ptr = fopen("test.mid","wb");  // w for write, b for binary
         fwrite(midi_data[midi_handle], midi_size[midi_handle], 1, write_ptr); //
         printf("FILE WRITTEN\n");
+#endif
 
         TinyMidiLoader = tml_load_memory(midi_data[midi_handle], midi_size[midi_handle]);
         if (!TinyMidiLoader)
