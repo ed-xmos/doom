@@ -194,8 +194,8 @@ TMLDEF tml_message* tml_load_tsf_stream(struct tsf_stream* stream);
 //#define TML_WARN(msg)  *(int*)0 = 0xf00d;
 
 ////print errors and warnings
-//#define TML_ERROR(msg) printf("ERROR: %s\n", msg);
-//#define TML_WARN(msg)  printf("WARNING: %s\n", msg);
+#define TML_ERROR(msg) printf("ERROR: %s\n", msg);
+#define TML_WARN(msg)  printf("WARNING: %s\n", msg);
 
 #ifndef TML_ERROR
 #define TML_ERROR(msg)
@@ -285,6 +285,9 @@ static int tml_readvariablelength(struct tml_parser* p)
 	TML_WARN("Invalid variable length byte count"); return -1;
 }
 
+// Horrible hack to avoid failed malloc
+uint8_t static_mem[64*1024];
+
 static int tml_parsemessage(tml_message** f, struct tml_parser* p)
 {
 	int deltatime = tml_readvariablelength(p), status = tml_readbyte(p);
@@ -304,9 +307,14 @@ static int tml_parsemessage(tml_message** f, struct tml_parser* p)
 	if (p->message_array_size == p->message_count)
 	{
 		//start allocated memory size of message array at 64, double each time until 8192, then add 1024 entries until done
-		p->message_array_size += (!p->message_array_size ? 64 : (p->message_array_size > 4096 ? 1024 : p->message_array_size));
-		*f = (tml_message*)TML_REALLOC(*f, p->message_array_size * sizeof(tml_message));
-		if (!*f) { TML_ERROR("Out of memory"); return -1; }
+		
+		// Hackstart
+		*f = (tml_message*) static_mem;
+		// p->message_array_size += (!p->message_array_size ? 64 : (p->message_array_size > 4096 ? 1024 : p->message_array_size));
+		// *f = (tml_message*)TML_REALLOC(*f, p->message_array_size * sizeof(tml_message));
+		// if (!*f) { 
+		// 		printf("Tried to allocate: %d\n", p->message_array_size * sizeof(tml_message)); TML_ERROR("Out of memory"); return -1; 
+		// }
 	}
 	evt = *f + p->message_count;
 
@@ -403,6 +411,7 @@ TMLDEF tml_message* tml_load(struct tml_stream* stream)
 	if (num_tracks <= 0 && division <= 0) { TML_ERROR("Doesn't look like a MIDI file: invalid track or division values"); return messages; }
 
 	// Allocate temporary tracks array for parsing
+	printf("Allocating: %d\n", sizeof(struct tml_track) * num_tracks);
 	tracks = (struct tml_track*)TML_MALLOC(sizeof(struct tml_track) * num_tracks);
 	tracksEnd = &tracks[num_tracks];
 	for (t = tracks; t != tracksEnd; t++) t->Idx = t->End = t->Ticks = 0;
@@ -419,7 +428,8 @@ TMLDEF tml_message* tml_load(struct tml_stream* stream)
 		// Get size of track data and read into buffer (allocate bigger buffer if needed)
 		track_length = track_header[7] | (track_header[6] << 8) | (track_header[5] << 16) | (track_header[4] << 24);
 		if (track_length < 0) { TML_WARN("Invalid MTrk header"); break; }
-		if (trackbufsize < track_length) { TML_FREE(trackbuf); trackbuf = (unsigned char*)TML_MALLOC(trackbufsize = track_length); }
+		if (trackbufsize < track_length) { TML_FREE(trackbuf); 	printf("Allocating: %d\n", track_length);
+trackbuf = (unsigned char*)TML_MALLOC(trackbufsize = track_length); }
 		if (stream->read(stream->data, trackbuf, track_length) != track_length) { TML_WARN("Unexpected end of file"); break; }
 
 		t->Idx = p.message_count;
