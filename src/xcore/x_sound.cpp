@@ -481,15 +481,15 @@ int I_StartSound
   int   pitch,
   int   priority )
 {
-  printf("I_StartSound id: %d \n", id);
+  // printf("I_StartSound id: %d \n", id);
 
   // UNUSED
   priority = 0;
   
 
-    id = addsfx( id, vol, steptable[pitch], sep );
+  id = addsfx( id, vol, steptable[pitch], sep );
     
-    return id;
+  return id;
 }
 
 
@@ -500,8 +500,8 @@ void I_StopSound (int handle)
 
 boolean I_SoundIsPlaying(int handle)
 {
-  printf("I_SoundIsPlaying: %d \n", handle);
-  return 0;
+  // Ouch.
+  return gametic < handle;
 }
 
 void I_ShutdownSound(void)

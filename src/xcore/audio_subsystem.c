@@ -33,6 +33,7 @@ static tml_message* g_MidiMessage;  //next message to be played
 
 // PCM sample double buffer
 static int16_t sample_buffer[2][SAMPLECOUNT][APP_NUM_I2S_CHANNELS_OUT];
+int g_master_volume = 0;
 
 size_t ProduceMIDIToBuffer(const uint8_t *musBuf, size_t musSize, uint8_t *outBuf, size_t outBufSize);
 void render_midi(chanend c_midi_pcm, chanend c_midi_msg);
@@ -44,10 +45,8 @@ void render_midi_wrapper(chanend c_midi_pcm, chanend c_midi_msg){
 
 
 
-#define N_SINE 50
 typedef struct i2s_callback_args_t {
     bool did_restart;                       // Set by init
-    int32_t samples[APP_NUM_I2S_CHANNELS_OUT][N_SINE]; //dbg
     int table_idx;  //dbg
     chanend_t c_midi_pcm;
     // PCM stuff
@@ -55,7 +54,6 @@ typedef struct i2s_callback_args_t {
     int sample_buffer_idx;
     int pcm_block_idx;
     int upsample_counter;
-
 } i2s_callback_args_t;
 
 
@@ -109,6 +107,9 @@ static void i2s_send(void *app_data, size_t num_out, int32_t *i2s_sample_buf){
         cb_args->upsample_counter = 0;
     }
 
+    int32_t midi_left = 0;
+    int32_t midi_right = 0;
+
     // Non-blocking read to wait for pointer to samples
     SELECT_RES(
         CASE_THEN(cb_args->c_midi_pcm, midi_samples_available),
@@ -117,14 +118,13 @@ static void i2s_send(void *app_data, size_t num_out, int32_t *i2s_sample_buf){
     {
         midi_samples_available:
         {
-            i2s_sample_buf[0] = chan_in_word(cb_args->c_midi_pcm) + ((int32_t)pcm_left << 16);
-            i2s_sample_buf[1] = chan_in_word(cb_args->c_midi_pcm) + ((int32_t)pcm_right << 16);
+            midi_left = chan_in_word(cb_args->c_midi_pcm);
+            midi_right = chan_in_word(cb_args->c_midi_pcm);
         }
         break;
 
         default_handler:
         {
-            i2s_sample_buf[1] = 0;
             if(++counter == APP_MIDI_SAMPLE_RATE){
                 puts("S");
                 counter = 0;
@@ -132,6 +132,9 @@ static void i2s_send(void *app_data, size_t num_out, int32_t *i2s_sample_buf){
         }
         break;
     }
+
+    i2s_sample_buf[0] = (midi_left + ((int32_t)pcm_left << 16)) >> (15 - g_master_volume);
+    i2s_sample_buf[1] = (midi_right + ((int32_t)pcm_right << 16)) >> (15 - g_master_volume);
 }
 
 I2S_CALLBACK_ATTR
@@ -171,7 +174,6 @@ void i2s_task(chanend_t c_midi_pcm, chanend_t c_pcm_samples, chanend_t c_i2c){
     // Initialise app_data
     i2s_callback_args_t app_data = {
         .did_restart = false,
-        .samples = {{0}},
         .table_idx = 0,
         .c_midi_pcm = c_midi_pcm,
         .c_pcm_samples = c_pcm_samples,
@@ -180,11 +182,6 @@ void i2s_task(chanend_t c_midi_pcm, chanend_t c_pcm_samples, chanend_t c_i2c){
         .upsample_counter = 0
     };
 
-    for(int i = 0; i < N_SINE; i++){
-        int32_t sample = ((1 << 24) * sin(6.283185307 / N_SINE * i));
-        app_data.samples[0][i]= sample;
-        app_data.samples[1][i]= sample;
-    }
 
     // Initialise callback function pointers
     i2s_callback_group_t i2s_cb_group = {
@@ -299,8 +296,9 @@ void sound_dispatcher(chanend_t c_midi_app, chanend_t c_midi_track, chanend_t c_
             {
                 int new_block_idx = s_chan_in_word(c_pcm_samples);
                 s_chan_out_word(c_pcm_app, 0);
+                g_master_volume = s_chan_in_word(c_pcm_app);
                 int16_t *ptr = sample_buffer[new_block_idx][0];
-                // TODO optimise this
+                // TODO optimise this for two samples at a time
                 for(int i = 0; i < SAMPLECOUNT * APP_NUM_I2S_CHANNELS_OUT; i++){
                     *ptr = s_chan_in_word(c_pcm_app);
                     ptr++;
