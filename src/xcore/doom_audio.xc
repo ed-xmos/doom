@@ -74,12 +74,20 @@ void doom_audio_send_pcm_sample_buffer(void){
 				printf("Samples requested\n");
 				int16_t stream[SAMPLECOUNT][APP_NUM_I2S_CHANNELS_OUT];
 				I_UpdateSound(NULL, (uint8_t * unsafe)stream, SAMPLECOUNT);
+				
+				int16_t * unsafe ptr = (int16_t * unsafe)stream[0];
+				for(int i = 0; i < SAMPLECOUNT * APP_NUM_I2S_CHANNELS_OUT; i++){
+				    g_c_pcm_app <: *ptr;
+				    ptr++;
+				}
+
+				ptr = (int16_t * unsafe)stream[0];
 				for(int i = 0; i < 16; i++){
 					int16_t *ptr = stream[i];
 					printf("sample %d: %d\n", i, *ptr);
 				}
 				break;
-				
+
 			default:
 				break;
 		}

@@ -31,6 +31,9 @@ static double g_Msec;               //current playback time
 static tml_message* g_MidiMessage;  //next message to be played
 
 
+// PCM sample double buffer
+static int16_t sample_buffer[2][SAMPLECOUNT][APP_NUM_I2S_CHANNELS_OUT];
+
 size_t ProduceMIDIToBuffer(const uint8_t *musBuf, size_t musSize, uint8_t *outBuf, size_t outBufSize);
 void render_midi(chanend c_midi_pcm, chanend c_midi_msg);
 
@@ -44,9 +47,14 @@ void render_midi_wrapper(chanend c_midi_pcm, chanend c_midi_msg){
 #define N_SINE 50
 typedef struct i2s_callback_args_t {
     bool did_restart;                       // Set by init
-    int32_t samples[APP_NUM_I2S_CHANNELS_OUT][N_SINE];
-    int table_idx;
+    int32_t samples[APP_NUM_I2S_CHANNELS_OUT][N_SINE]; //dbg
+    int table_idx;  //dbg
     chanend_t c_midi_pcm;
+    // PCM stuff
+    chanend_t c_pcm_samples;
+    int sample_buffer_idx;
+    int pcm_block_idx;
+
 } i2s_callback_args_t;
 
 
@@ -75,7 +83,27 @@ I2S_CALLBACK_ATTR
 static void i2s_send(void *app_data, size_t num_out, int32_t *i2s_sample_buf){
     i2s_callback_args_t *cb_args = app_data;
 
-    static int counter = 0;
+    static int counter = 0; //dbg
+
+    // Grab PCM samples from buffer
+    int sample_buffer_idx = cb_args->sample_buffer_idx;
+    int pcm_block_idx = cb_args->pcm_block_idx;
+    chanend_t c_pcm_samples = cb_args->c_pcm_samples;
+
+    int16_t pcm_left = sample_buffer[pcm_block_idx][sample_buffer_idx][0];
+    int16_t pcm_right = sample_buffer[pcm_block_idx][sample_buffer_idx][1];
+
+    int new_block_idx = pcm_block_idx ^ 0x1;
+    sample_buffer_idx++;
+    // Request new block
+    if(sample_buffer_idx == SAMPLECOUNT / 2){
+        s_chan_out_word(c_pcm_samples, new_block_idx); 
+    }
+    if(sample_buffer_idx == SAMPLECOUNT){
+        cb_args->pcm_block_idx = new_block_idx;
+        sample_buffer_idx = 0;
+    }
+    cb_args->sample_buffer_idx = sample_buffer_idx;
 
     // Non-blocking read to wait for pointer to samples
     SELECT_RES(
@@ -85,8 +113,8 @@ static void i2s_send(void *app_data, size_t num_out, int32_t *i2s_sample_buf){
     {
         midi_samples_available:
         {
-            i2s_sample_buf[0] = chan_in_word(cb_args->c_midi_pcm);
-            i2s_sample_buf[1] = chan_in_word(cb_args->c_midi_pcm);
+            i2s_sample_buf[0] = chan_in_word(cb_args->c_midi_pcm) + ((int32_t)pcm_left << 16);
+            i2s_sample_buf[1] = chan_in_word(cb_args->c_midi_pcm) + ((int32_t)pcm_right << 16);
         }
         break;
 
@@ -109,8 +137,8 @@ static void i2s_receive(void *app_data, size_t num_in, const int32_t *i2s_sample
 }
 
 
-DECLARE_JOB(i2s_task, (chanend_t, chanend_t));
-void i2s_task(chanend_t c_midi_pcm, chanend_t c_i2c){
+DECLARE_JOB(i2s_task, (chanend_t, chanend_t, chanend_t));
+void i2s_task(chanend_t c_midi_pcm, chanend_t c_pcm_samples, chanend_t c_i2c){
     
     // Setup DAC
     // Board configuration from lib_board_support
@@ -141,7 +169,10 @@ void i2s_task(chanend_t c_midi_pcm, chanend_t c_i2c){
         .did_restart = false,
         .samples = {{0}},
         .table_idx = 0,
-        .c_midi_pcm = c_midi_pcm
+        .c_midi_pcm = c_midi_pcm,
+        .c_pcm_samples = c_pcm_samples,
+        .sample_buffer_idx = 0,
+        .pcm_block_idx = 0
     };
 
     for(int i = 0; i < N_SINE; i++){
@@ -179,20 +210,19 @@ size_t midi_size[NUM_MIDI_TRACKS] = {0};
 uint8_t midi_data[NUM_MIDI_TRACKS][MAX_MIDI_TRACK_SIZE] = {{0}};
 int midi_register_handle = 0;
 
-DECLARE_JOB(sound_dispatcher, (chanend_t, chanend_t, chanend_t));
-void sound_dispatcher(chanend_t c_midi_app, chanend_t c_midi_track, chanend_t c_pcm_app){
+DECLARE_JOB(sound_dispatcher, (chanend_t, chanend_t, chanend_t, chanend_t));
+void sound_dispatcher(chanend_t c_midi_app, chanend_t c_midi_track, chanend_t c_pcm_app, chanend_t c_pcm_samples){
     uint8_t mus_data[MAX_MIDI_TRACK_SIZE] = {0};
 
     while(1){
         // Non-blocking read to wait for pointer to samples
         SELECT_RES(
-            CASE_THEN(c_midi_app, midi_incoming)
+            CASE_THEN(c_midi_app, midi_incoming),
+            CASE_THEN(c_pcm_samples, need_sample_block)
         )
         {
             midi_incoming:
             {
-                s_chan_out_word(c_pcm_app, 0); // TEMP
-
                 int cmd = s_chan_in_word(c_midi_app);
 
                 switch(cmd){
@@ -259,6 +289,20 @@ void sound_dispatcher(chanend_t c_midi_app, chanend_t c_midi_track, chanend_t c_
                 } // switch
             }
             break; // select case
+
+            need_sample_block:
+            {
+                printf("need_sample_block\n");
+                int new_block_idx = s_chan_in_word(c_pcm_samples);
+                // s_chan_out_word(c_pcm_app, 0);
+                int16_t *ptr = sample_buffer[new_block_idx][0];
+                for(int i = 0; i < SAMPLECOUNT * APP_NUM_I2S_CHANNELS_OUT; i++){
+                    // *ptr = s_chan_in_word(c_pcm_app);
+                    ptr++;
+                }
+
+            }
+            break;
 
         } //select
     }
@@ -401,11 +445,12 @@ void audio_subsystem(chanend_t c_i2c,
     channel_t c_midi_pcm = chan_alloc();
     channel_t c_midi_msg = chan_alloc();
     channel_t c_midi_track = chan_alloc();
+    channel_t c_pcm_samples = chan_alloc();
 
 
     PAR_JOBS(PJOB(render_midi_wrapper, (c_midi_pcm.end_a, c_midi_msg.end_b)),
              PJOB(midi_sequencer, (c_midi_msg.end_a, c_midi_track.end_a)),
-             PJOB(i2s_task, (c_midi_pcm.end_b, c_i2c)),
-             PJOB(sound_dispatcher, (c_midi_app, c_midi_track.end_b, c_pcm_app)));
+             PJOB(i2s_task, (c_midi_pcm.end_b, c_pcm_samples.end_a, c_i2c)),
+             PJOB(sound_dispatcher, (c_midi_app, c_midi_track.end_b, c_pcm_app, c_pcm_samples.end_b)));
 
 }

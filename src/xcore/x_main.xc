@@ -27,7 +27,7 @@ extern "C" {
   void audio_subsystem(chanend c_i2c, streaming chanend c_midi_app, streaming chanend c_pcm_app);
 }
 extern void lcd_renderer(streaming chanend doom_usbv_display, streaming chanend c_lcd_trigger);
-
+extern void pcm_block_fetch(streaming chanend c_pcm_app);
 
 // static void doom_task(int argc, char * unsafe * unsafe argv,
 //                client interface doom_display display)
