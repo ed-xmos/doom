@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include "doom_audio.h"
 #include "z_zone.h"
+#include "lprintf.h"
+#include <math.h>
 
 #define NUM_CHANNELS		8
 
@@ -24,21 +26,69 @@ int		channelstart[NUM_CHANNELS];
 int 		channelhandles[NUM_CHANNELS];
 int		channelids[NUM_CHANNELS];
 int		steptable[256];
-int		vol_lookup[128*256];
+EXTMEMD int		vol_lookup[128*256];
 int*		channelleftvol_lookup[NUM_CHANNELS];
 int*		channelrightvol_lookup[NUM_CHANNELS];
 
 extern int numChannels;
+extern int snd_SfxVolume;
+extern int gametic;
 
+// Flag for PCM get stuff t say when ready
+int pcm_initialised = 0;
+
+
+
+//
+// SFX API
+// Note: this was called by S_Init.
+// However, whatever they did in the
+// old DPMS based DOS version, this
+// were simply dummies in the Linux
+// version.
+// See soundserver initdata().
+//
 void I_SetChannels()
 {
-  numChannels = 8; // defined in l_sounds_sdl.cpp
-  printf("I_SetChannels: %d\n", numChannels);
-}	
+  // Init internal lookups (raw data, mixing buffer, channels).
+  // This function sets up internal lookups used during
+  //  the mixing process. 
+  int   i;
+  int   j;
+    
+  int*  steptablemid = steptable + 128;
+  
+  // Okay, reset internal mixing channels to zero.
+  /*for (i=0; i<NUM_CHANNELS; i++)
+  {
+    channels[i] = 0;
+  }*/
+
+  // This table provides step widths for pitch parameters.
+  // I fail to see that this is currently used.
+  for (i=-128 ; i<128 ; i++)
+    steptablemid[i] = (int)(pow(2.0, (i/64.0))*65536.0);
+  
+  
+  // Generates volume lookup tables
+  //  which also turn the unsigned samples
+  //  into signed samples.
+  for (i=0 ; i<128 ; i++)
+    for (j=0 ; j<256 ; j++) {
+      vol_lookup[i*256+j] = (i*(j-128)*256)/127;
+//fprintf(stderr, "vol_lookup[%d*256+%d] = %d\n", i, j, vol_lookup[i*256+j]);
+    }
+} 
 
 void I_SetSfxVolume(int volume)
 {
   printf("I_SetSfxVolume: %d \n", volume);
+  // Identical to DOS.
+  // Basically, this should propagate
+  //  the menu/config file setting
+  //  to the state variable used in
+  //  the mixing.
+  snd_SfxVolume = volume;
 }
 
 int I_GetSfxLumpNum(sfxinfo_t* sfx)
@@ -48,28 +98,8 @@ int I_GetSfxLumpNum(sfxinfo_t* sfx)
   return W_GetNumForName(namebuf);
 }
 
-int
-I_StartSound
-( int		id,
-  int		vol,
-  int		sep,
-  int		pitch,
-  int		priority )
-{
-  printf("I_StartSound id: %d \n", id);
-  return 0;
-}
 
-void I_StopSound (int handle)
-{
-  printf("I_StopSound: %d \n", handle);
-}
 
-boolean I_SoundIsPlaying(int handle)
-{
-  printf("I_SoundIsPlaying: %d \n", handle);
-  return 0;
-}
 
 void
 I_UpdateSoundParams
@@ -208,6 +238,134 @@ getsfx
 }
 
 
+//
+// This function adds a sound to the
+//  list of currently active sounds,
+//  which is maintained as a given number
+//  (eight, usually) of internal channels.
+// Returns a handle.
+//
+int
+addsfx
+( int   sfxid,
+  int   volume,
+  int   step,
+  int   seperation )
+{
+    static unsigned short handlenums = 0;
+ 
+    int   i;
+    int   rc = -1;
+    
+    int   oldest = gametic;
+    int   oldestnum = 0;
+    int   slot;
+
+    int   rightvol;
+    int   leftvol;
+
+    // Chainsaw troubles.
+    // Play these sound effects only one at a time.
+    if ( sfxid == sfx_sawup
+   || sfxid == sfx_sawidl
+   || sfxid == sfx_sawful
+   || sfxid == sfx_sawhit
+   || sfxid == sfx_stnmov
+   || sfxid == sfx_pistol  )
+    {
+  // Loop all channels, check.
+  for (i=0 ; i<NUM_CHANNELS ; i++)
+  {
+      // Active, and using the same SFX?
+      if ( (channels[i])
+     && (channelids[i] == sfxid) )
+      {
+    // Reset.
+    channels[i] = 0;
+    // We are sure that iff,
+    //  there will only be one.
+    break;
+      }
+  }
+    }
+
+    // Loop all channels to find oldest SFX.
+    for (i=0; (i<NUM_CHANNELS) && (channels[i]); i++)
+    {
+  if (channelstart[i] < oldest)
+  {
+      oldestnum = i;
+      oldest = channelstart[i];
+  }
+    }
+
+    // Tales from the cryptic.
+    // If we found a channel, fine.
+    // If not, we simply overwrite the first one, 0.
+    // Probably only happens at startup.
+    if (i == NUM_CHANNELS)
+  slot = oldestnum;
+    else
+  slot = i;
+
+    // Okay, in the less recent channel,
+    //  we will handle the new SFX.
+    // Set pointer to raw data.
+    channels[slot] = (unsigned char *) S_sfx[sfxid].data;
+    // Set pointer to end of raw data.
+    channelsend[slot] = channels[slot] + lengths[sfxid];
+
+    // Reset current handle number, limited to 0..100.
+    if (!handlenums)
+  handlenums = 100;
+
+    // Assign current handle number.
+    // Preserved so sounds could be stopped (unused).
+    channelhandles[slot] = rc = handlenums++;
+
+    // Set stepping???
+    // Kinda getting the impression this is never used.
+    channelstep[slot] = step;
+    // ???
+    channelstepremainder[slot] = 0;
+    // Should be gametic, I presume.
+    channelstart[slot] = gametic;
+
+    // Separation, that is, orientation/stereo.
+    //  range is: 1 - 256
+    seperation += 1;
+
+    // Per left/right channel.
+    //  x^2 seperation,
+    //  adjust volume properly.
+    volume *= 8;
+    leftvol =
+  volume - ((volume*seperation*seperation) >> 16); ///(256*256);
+    seperation = seperation - 257;
+    rightvol =
+  volume - ((volume*seperation*seperation) >> 16);  
+
+    // Sanity check, clamp volume.
+    if (rightvol < 0 || rightvol > 127)
+  I_Error("rightvol out of bounds");
+    
+    if (leftvol < 0 || leftvol > 127)
+  I_Error("leftvol out of bounds");
+    
+    // Get the proper lookup table piece
+    //  for this volume level???
+    channelleftvol_lookup[slot] = &vol_lookup[leftvol*256];
+    channelrightvol_lookup[slot] = &vol_lookup[rightvol*256];
+
+    // Preserve sound SFX id,
+    //  e.g. for avoiding duplicates of chainsaw.
+    channelids[slot] = sfxid;
+
+    // You tell me.
+    return rc;
+}
+
+
 // This function loops all active (internal) sound
 //  channels, retrieves a given number of samples
 //  from the raw sound data, modifies it according
@@ -221,7 +379,7 @@ getsfx
 extern "C" {
 void I_UpdateSound(void *unused, uint8_t *stream, int len)
 {
-  printf("I_UpdateSound SDL: %d\n", len);
+  // printf("I_UpdateSound SDL: %d\n", len);
 
   // Mix current sound data.
   // Data, from raw sound, for right and left.
@@ -315,6 +473,37 @@ void I_UpdateSound(void *unused, uint8_t *stream, int len)
 }
 } // extern C
 
+
+int I_StartSound
+( int   id,
+  int   vol,
+  int   sep,
+  int   pitch,
+  int   priority )
+{
+  printf("I_StartSound id: %d \n", id);
+
+  // UNUSED
+  priority = 0;
+  
+
+    id = addsfx( id, vol, steptable[pitch], sep );
+    
+    return id;
+}
+
+
+void I_StopSound (int handle)
+{
+  printf("I_StopSound: %d \n", handle);
+}
+
+boolean I_SoundIsPlaying(int handle)
+{
+  printf("I_SoundIsPlaying: %d \n", handle);
+  return 0;
+}
+
 void I_ShutdownSound(void)
 {
   printf("I_ShutdownSound\n");
@@ -342,6 +531,8 @@ void I_InitSound()
   printf("I_InitSound\n");
   int i;
  
+  numChannels = 8; // defined in l_sounds_sdl.cpp
+
 
   audio.freq = SAMPLERATE;
 #if ( SDL_BYTEORDER == SDL_BIG_ENDIAN )
@@ -384,4 +575,5 @@ void I_InitSound()
   
   // Finished initialization.
   fprintf(stderr, "I_InitSound: sound module ready\n");
+  pcm_initialised = 1;
 }

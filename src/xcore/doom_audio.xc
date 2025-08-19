@@ -5,7 +5,6 @@
 
 
 extern unsafe streaming chanend g_c_midi_app;
-extern unsafe streaming chanend g_c_pcm_app;
 
 int doom_audio_register_song(const uint8_t * data, size_t len){
   unsafe{
@@ -65,31 +64,33 @@ void doom_audio_unregister_song(int handle){
 }
 
 extern void I_UpdateSound(void * unsafe unused, uint8_t * unsafe stream, int len);
+extern int pcm_initialised;
 
+void pcm_samples_server(streaming chanend c_pcm_app){
+	int16_t stream[SAMPLECOUNT][APP_NUM_I2S_CHANNELS_OUT] = {{0}};
 
-void doom_audio_send_pcm_sample_buffer(void){
-	unsafe{
+	while(1){
 		select{
-			case g_c_pcm_app :> int _:
-				printf("Samples requested\n");
-				int16_t stream[SAMPLECOUNT][APP_NUM_I2S_CHANNELS_OUT];
-				I_UpdateSound(NULL, (uint8_t * unsafe)stream, SAMPLECOUNT);
-				
-				int16_t * unsafe ptr = (int16_t * unsafe)stream[0];
-				for(int i = 0; i < SAMPLECOUNT * APP_NUM_I2S_CHANNELS_OUT; i++){
-				    g_c_pcm_app <: *ptr;
-				    ptr++;
-				}
+			case c_pcm_app :> int _:
+				unsafe{
+					// printf("Samples requested\n");
 
-				ptr = (int16_t * unsafe)stream[0];
-				for(int i = 0; i < 16; i++){
-					int16_t *ptr = stream[i];
-					printf("sample %d: %d\n", i, *ptr);
-				}
-				break;
+					if(!pcm_initialised){
+						printf("PCM not initialised yet..\n");
+					} else {
+						I_UpdateSound(NULL, (uint8_t * unsafe)stream, SAMPLECOUNT);
+					}
+					
+					int16_t * unsafe ptr = (int16_t * unsafe)stream[0];
+					for(int i = 0; i < SAMPLECOUNT * APP_NUM_I2S_CHANNELS_OUT; i++){
+					    c_pcm_app <: (int32_t)*ptr;
+					    ptr++;
+					}
 
-			default:
-				break;
+					ptr = (int16_t * unsafe)stream[0];
+					printf("sample %d %d\n", *ptr++, *ptr);
+				}
+			break;
 		}
 	}
 }

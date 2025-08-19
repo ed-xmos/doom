@@ -27,7 +27,7 @@ extern "C" {
   void audio_subsystem(chanend c_i2c, streaming chanend c_midi_app, streaming chanend c_pcm_app);
 }
 extern void lcd_renderer(streaming chanend doom_usbv_display, streaming chanend c_lcd_trigger);
-extern void pcm_block_fetch(streaming chanend c_pcm_app);
+extern void pcm_samples_server(streaming chanend c_pcm_app);
 
 // static void doom_task(int argc, char * unsafe * unsafe argv,
 //                client interface doom_display display)
@@ -46,17 +46,14 @@ unsafe client interface fs_basic_if g_i_fs;
 FATFS fatfs;
 unsafe streaming chanend g_doom_usbv_display;
 unsafe streaming chanend g_c_midi_app;
-unsafe streaming chanend g_c_pcm_app;
 
 
 static void doom_task_fixed_args( streaming chanend doom_usbv_display,
-                                  streaming chanend c_midi_app,
-                                  streaming chanend c_pcm_app)
+                                  streaming chanend c_midi_app)
 {
   unsafe{
     g_doom_usbv_display = doom_usbv_display;
     g_c_midi_app = c_midi_app;
-    g_c_pcm_app = c_pcm_app;
   }
 
   int result = 0;
@@ -95,14 +92,14 @@ int main(void)
     on tile[0]:
     par {
       // doom_task(argc, argv, display);
-      doom_task_fixed_args(doom_usbv_display, c_midi_app, c_pcm_app);
+      doom_task_fixed_args(doom_usbv_display, c_midi_app);
       {
         fl_QuadDeviceSpec qspi_spec = FL_QUADDEVICE_DEFAULT;
         qspi_flash_fs_media(i_media, qspi_flash_ports, qspi_spec, 512);
       }
       filesystem_basic(i_fs, 1, FS_FORMAT_FAT12, i_media);
       xk_evk_xu316_AudioHwRemote(c_i2c); // Startup remote I2C master server task
-
+      pcm_samples_server(c_pcm_app);
     }
     on tile[1]:
     par{

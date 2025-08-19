@@ -54,6 +54,7 @@ typedef struct i2s_callback_args_t {
     chanend_t c_pcm_samples;
     int sample_buffer_idx;
     int pcm_block_idx;
+    int upsample_counter;
 
 } i2s_callback_args_t;
 
@@ -94,16 +95,19 @@ static void i2s_send(void *app_data, size_t num_out, int32_t *i2s_sample_buf){
     int16_t pcm_right = sample_buffer[pcm_block_idx][sample_buffer_idx][1];
 
     int new_block_idx = pcm_block_idx ^ 0x1;
-    sample_buffer_idx++;
-    // Request new block
-    if(sample_buffer_idx == SAMPLECOUNT / 2){
-        s_chan_out_word(c_pcm_samples, new_block_idx); 
+    if(++cb_args->upsample_counter == UPSAMPLE_RATIO){
+        sample_buffer_idx++;
+        // Request new block
+        if(sample_buffer_idx == SAMPLECOUNT / 2){
+            s_chan_out_word(c_pcm_samples, new_block_idx); 
+        }
+        if(sample_buffer_idx == SAMPLECOUNT){
+            cb_args->pcm_block_idx = new_block_idx;
+            sample_buffer_idx = 0;
+        }
+        cb_args->sample_buffer_idx = sample_buffer_idx;
+        cb_args->upsample_counter = 0;
     }
-    if(sample_buffer_idx == SAMPLECOUNT){
-        cb_args->pcm_block_idx = new_block_idx;
-        sample_buffer_idx = 0;
-    }
-    cb_args->sample_buffer_idx = sample_buffer_idx;
 
     // Non-blocking read to wait for pointer to samples
     SELECT_RES(
@@ -172,7 +176,8 @@ void i2s_task(chanend_t c_midi_pcm, chanend_t c_pcm_samples, chanend_t c_i2c){
         .c_midi_pcm = c_midi_pcm,
         .c_pcm_samples = c_pcm_samples,
         .sample_buffer_idx = 0,
-        .pcm_block_idx = 0
+        .pcm_block_idx = 0,
+        .upsample_counter = 0
     };
 
     for(int i = 0; i < N_SINE; i++){
@@ -292,15 +297,14 @@ void sound_dispatcher(chanend_t c_midi_app, chanend_t c_midi_track, chanend_t c_
 
             need_sample_block:
             {
-                printf("need_sample_block\n");
                 int new_block_idx = s_chan_in_word(c_pcm_samples);
-                // s_chan_out_word(c_pcm_app, 0);
+                s_chan_out_word(c_pcm_app, 0);
                 int16_t *ptr = sample_buffer[new_block_idx][0];
+                // TODO optimise this
                 for(int i = 0; i < SAMPLECOUNT * APP_NUM_I2S_CHANNELS_OUT; i++){
-                    // *ptr = s_chan_in_word(c_pcm_app);
+                    *ptr = s_chan_in_word(c_pcm_app);
                     ptr++;
                 }
-
             }
             break;
 

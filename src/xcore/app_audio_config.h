@@ -14,3 +14,5 @@
 #define SAMPLERATE 						(APP_I2S_FREQUENCY / 2)
 #define AUDIO_S16MSB					1
 #define SAMPLECOUNT 					512
+// #define UPSAMPLE_RATIO					(APP_I2S_FREQUENCY / SAMPLERATE)
+#define UPSAMPLE_RATIO					1

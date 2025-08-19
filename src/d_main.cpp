@@ -392,8 +392,6 @@ OVERLAY static void D_DoomLoop(void)
       	auto_shot_count = auto_shot_time;
       	M_DoScreenShot(auto_shot_fname);
       }
-      // Will poll for new samples request and send if needed
-      doom_audio_send_pcm_sample_buffer();
     }
 }
 
