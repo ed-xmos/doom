@@ -25,6 +25,7 @@ extern "C" {
   int doom_main(int argc, char **argv);
   void lcd(streaming chanend c_lcd_trigger);
   void audio_subsystem(chanend c_i2c, streaming chanend c_midi_app, streaming chanend c_pcm_app);
+  void ps2_task(streaming chanend c_ps2);
 }
 extern void lcd_renderer(streaming chanend doom_usbv_display, streaming chanend c_lcd_trigger);
 extern void pcm_samples_server(streaming chanend c_pcm_app);
@@ -46,14 +47,18 @@ unsafe client interface fs_basic_if g_i_fs;
 FATFS fatfs;
 unsafe streaming chanend g_doom_usbv_display;
 unsafe streaming chanend g_c_midi_app;
+unsafe streaming chanend g_c_ps2;
 
 
 static void doom_task_fixed_args( streaming chanend doom_usbv_display,
-                                  streaming chanend c_midi_app)
+                                  streaming chanend c_midi_app,
+                                  streaming chanend c_ps2)
 {
+  // Setup global chanends
   unsafe{
     g_doom_usbv_display = doom_usbv_display;
     g_c_midi_app = c_midi_app;
+    g_c_ps2 = c_ps2;
   }
 
   int result = 0;
@@ -86,20 +91,22 @@ int main(void)
   interface fs_basic_if i_fs[1];
   interface fs_storage_media_if i_media;
   streaming chan c_lcd_trigger;
+  streaming chan c_ps2;
 
 
   par {
     on tile[0]:
     par {
       // doom_task(argc, argv, display);
-      doom_task_fixed_args(doom_usbv_display, c_midi_app);
+      doom_task_fixed_args(doom_usbv_display, c_midi_app, c_ps2);
+      pcm_samples_server(c_pcm_app); // Acts as task to service the PCM samples request
+      ps2_task(c_ps2); // Runs the PS2 receiver task. Very low MIPS
       {
         fl_QuadDeviceSpec qspi_spec = FL_QUADDEVICE_DEFAULT;
         qspi_flash_fs_media(i_media, qspi_flash_ports, qspi_spec, 512);
       }
-      filesystem_basic(i_fs, 1, FS_FORMAT_FAT12, i_media);
-      xk_evk_xu316_AudioHwRemote(c_i2c); // Startup remote I2C master server task
-      pcm_samples_server(c_pcm_app);
+      filesystem_basic(i_fs, 1, FS_FORMAT_FAT12, i_media); // Just does init then pauses now. Could be replaced with init fn call
+      xk_evk_xu316_AudioHwRemote(c_i2c); // Startup remote I2C master server task. Does nothing after startup
     }
     on tile[1]:
     par{

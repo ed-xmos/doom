@@ -99,11 +99,11 @@ void pcm_samples_server(streaming chanend c_pcm_app){
 			
 			case p_buttons when pinsneq(port_old) :> int new_port:
 				port_old = new_port;
-				if(new_port == 0x02){
+				if(new_port == 0x01){
 					if(master_volume < 15) master_volume++;
 					printf("Master volume: %d\n", master_volume);
 				}
-				else if(new_port == 0x01){
+				else if(new_port == 0x02){
 					if(master_volume > 0) master_volume--;
 					printf("Master volume: %d\n", master_volume);
 				}
