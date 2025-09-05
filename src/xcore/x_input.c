@@ -8,7 +8,8 @@
 #include "doomdef.h"
 
 port_t ps2_clock = XS1_PORT_1A; // found on J14 on the explorer
-port_t ps2_data = XS1_PORT_1D;  // found on J14 on the explorer
+port_t ps2_data = XS1_PORT_4C;  // found on J14 on the explorer
+// port_t ps2_data = XS1_PORT_1D;  // found on J14 on the explorer
 
 extern int key_menu_right;
 extern int key_menu_down;
