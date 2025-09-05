@@ -71,7 +71,7 @@ extern int pcm_initialised;
 
 void pcm_samples_server(streaming chanend c_pcm_app){
 	int16_t stream[SAMPLECOUNT][APP_NUM_I2S_CHANNELS_OUT] = {{0}};
-	int master_volume = 15;
+	int master_volume = 12;
 
 	int port_old;
 	p_buttons :> port_old;

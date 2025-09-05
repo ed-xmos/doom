@@ -156,7 +156,7 @@ OVERLAY void D_PostEvent(event_t *ev)
   if (gametic < 3) return; 
   events[eventhead++] = *ev;
   eventhead &= MAXEVENTS-1;
-  printf("Event posted %d 0x%x\n", ev->type, ev->data1);
+  // printf("Event posted %d 0x%x\n", ev->type, ev->data1);
 }
 
 //

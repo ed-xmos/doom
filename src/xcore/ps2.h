@@ -78,10 +78,13 @@ extern void ps2HandlerInit(port_t ps2_clock, struct ps2state *state) ;
  *
  * \param clockBit  The bit number to which the clock is connected, 0 for a
  *                  one-bit port.
+ * 
+ * \param dataBit  The bit number to which the data is connected, 0 for a
+ *                  one-bit port.
  *
  * \param state     the variable that holds the PS2 state.
  **/
-void ps2Handler(port_t ps2_clock, port_t ps2_data, int clockBit, struct ps2state *state) ;
+void ps2Handler(port_t ps2_clock, port_t ps2_data, int clockBit, int dataBit, struct ps2state *state) ;
 
 /** This function can be called after hte ps2Handler function to interpret
  * whether anything interesting has happened. It returns three values: an

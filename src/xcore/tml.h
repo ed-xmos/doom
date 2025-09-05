@@ -286,7 +286,7 @@ static int tml_readvariablelength(struct tml_parser* p)
 }
 
 // Horrible hack to avoid failed malloc
-uint8_t static_mem[64*1024];
+uint8_t static_mem[76*1024];
 
 static int tml_parsemessage(tml_message** f, struct tml_parser* p)
 {
@@ -310,7 +310,8 @@ static int tml_parsemessage(tml_message** f, struct tml_parser* p)
 		
 		// Hackstart
 		*f = (tml_message*) static_mem;
-		// p->message_array_size += (!p->message_array_size ? 64 : (p->message_array_size > 4096 ? 1024 : p->message_array_size));
+		p->message_array_size += (!p->message_array_size ? 64 : (p->message_array_size > 4096 ? 1024 : p->message_array_size));
+		printf("Static allocation of size %d into size %d\n", p->message_array_size * sizeof(tml_message), sizeof(static_mem));
 		// *f = (tml_message*)TML_REALLOC(*f, p->message_array_size * sizeof(tml_message));
 		// if (!*f) { 
 		// 		printf("Tried to allocate: %d\n", p->message_array_size * sizeof(tml_message)); TML_ERROR("Out of memory"); return -1; 

@@ -142,7 +142,7 @@ int X_PollEvent(xdoom_event *Event){
       modifier = chanend_in_byte(g_c_ps2);
       key = chanend_in_byte(g_c_ps2);
       unsigned ascii_key = ps2ASCII(modifier, key);
-      printf("key: 0x%x asciikey: 0x%x raw modifer: 0x%x\n", key, ascii_key, modifier);
+      // printf("key: 0x%x asciikey: 0x%x raw modifer: 0x%x\n", key, ascii_key, modifier);
       if (action == PS2_PRESS) {
         Event->type = SDL_KEYDOWN;
         // printf("Modifiers 0x%02x press %d - 0x%x (%c)\n", modifier, key, ascii_key, ascii_key);

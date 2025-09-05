@@ -8,8 +8,7 @@
 #include "doomdef.h"
 
 port_t ps2_clock = XS1_PORT_1A; // found on J14 on the explorer
-port_t ps2_data = XS1_PORT_4C;  // found on J14 on the explorer
-// port_t ps2_data = XS1_PORT_1D;  // found on J14 on the explorer
+port_t ps2_data = XS1_PORT_4E;  // WUP WiFi
 
 extern int key_menu_right;
 extern int key_menu_down;
@@ -59,7 +58,7 @@ void ps2_task(chanend_t c_ps2) {
 
 	// Loop
     while (1) {
-        ps2Handler(ps2_clock, ps2_data, 0, &state);
+        ps2Handler(ps2_clock, ps2_data, 0, 0, &state);
         ps2Interpret(&state, &action, &modifier, &key);
         if (action == PS2_PRESS || action == PS2_RELEASE) {
             chanend_out_byte(c_ps2, (unsigned char) action);

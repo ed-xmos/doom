@@ -271,11 +271,11 @@ void ps2Interpret(	struct ps2state *state,
 }
 
 
-void handle_clock_helper(port_t ps2_clock, port_t ps2_data, int clockBit, struct ps2state *state){
+void handle_clock_helper(port_t ps2_clock, port_t ps2_data, int clockBit, int dataBit, struct ps2state *state){
 	// Grab the clock value
 	int new = port_in(ps2_clock);
 	if ((~state->clockValue & new) >> clockBit & 1) { // seen rising edge
-	        state->bit = port_in(ps2_data);
+	        state->bit = (port_in(ps2_data) >> dataBit) & 1;
 	        switch(state->mode) {
 	        case START_BIT: 
 	            if (state->bit == 0) {
@@ -331,7 +331,7 @@ void handle_clock_helper(port_t ps2_clock, port_t ps2_data, int clockBit, struct
 	    state->clockValue = new;
 }
 
-void ps2Handler(port_t ps2_clock, port_t ps2_data, int clockBit, struct ps2state *state) {
+void ps2Handler(port_t ps2_clock, port_t ps2_data, int clockBit, int dataBit, struct ps2state *state) {
 
 	port_set_trigger_in_not_equal(ps2_clock, state->clockValue);
 	SELECT_RES(
@@ -340,7 +340,7 @@ void ps2Handler(port_t ps2_clock, port_t ps2_data, int clockBit, struct ps2state
     {
         handle_clock:
         {
-        	handle_clock_helper(ps2_clock, ps2_data, clockBit, state);
+        	handle_clock_helper(ps2_clock, ps2_data, clockBit, dataBit, state);
         }
         break;
 
