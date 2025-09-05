@@ -7,6 +7,7 @@
 #include <xcore/hwtimer.h>
 #include <xcore/channel_streaming.h>
 #include "doom_display.h"
+#include "resource_adjust.h"
 
 #define DC_PIN "DC_PIN"
 #define CS_PIN "CS_PIN"
@@ -124,6 +125,8 @@ void copy_framebuffer_to_ili9341(const uint16_t* framebuffer) {
   spi_master_transfer(g_dev, (uint8_t*)framebuffer, 0, sizeof(uint16_t) * LCD_WIDTH * LCD_HEIGHT);
   spi_master_end_transaction(g_dev);
   int t2 = get_reference_time();
+  (void)t1;
+  (void)t2;
   // printintln(t2 - t1);
 }
 
@@ -146,10 +149,23 @@ void lcd(chanend_t c_lcd_trigger){
   const int cpha = 0;
   const int spi_div = 3; // 10 = 14MHz, 9 = 16MHz, 8 = 19MHz, 7 = 21MHz, 6 = 25MHz (20FPS), 5 = 30MHz, 4 = 38MHz, 3 = 50MHz (40FPS)
   
-  spi_master_init(&spi_mstr, XS1_CLKBLK_1, XS1_PORT_1M, XS1_PORT_1O /*clk*/, XS1_PORT_1P/*mosi*/, 0/*miso*/);
+  port_t p_ss = XS1_PORT_1M;
+  port_t p_clk = XS1_PORT_1O;
+  port_t p_mosi = XS1_PORT_1P;
+
+  spi_master_init(&spi_mstr, XS1_CLKBLK_1, p_ss, p_clk, p_mosi, 0/*miso*/);
   spi_master_device_init(&spi_dev, &spi_mstr, 0 /*cs pin*/, cpol, cpha, 
                         spi_master_source_clock_xcore, spi_div,
                         spi_master_sample_delay_0, 0, 0, 0, 0);
+
+  // Had some problems with EMI!
+  set_pad_output_slew(p_clk);
+  set_pad_output_slew(p_mosi);
+  set_pad_output_slew(p_ss);
+  #define DRIVE_STRENGTH DRIVE_4MA // 2MA doesn't work at 50MHz. Lowest we can go.
+  set_pad_drive_strength(p_clk, DRIVE_STRENGTH);
+  set_pad_drive_strength(p_mosi, DRIVE_STRENGTH);
+  set_pad_drive_strength(p_ss, DRIVE_STRENGTH);
 
   ili9341_init();
 

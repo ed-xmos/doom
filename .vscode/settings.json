@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        ".xc": "C",
+        "*.xc": "c",
+        "resource_adjust.h": "c"
+    }
+}

@@ -5,7 +5,8 @@ project(doom)
 set(APP_HW_TARGET           XCORE-AI-EXPLORER-800.xn)
 set(APP_PCA_ENABLE ON)
 
-set(APP_COMPILER_FLAGS      -Os
+set(APP_COMPILER_FLAGS      -O3
+                            -mno-dual-issue
                             -g
                             -report
                             -Wcpp,-std=gnu++98

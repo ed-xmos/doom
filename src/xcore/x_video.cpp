@@ -1,5 +1,6 @@
 #include "i_video.h"
 #include "doomstat.h"
+#include "doomdef.h"
 #include "doomtype.h"
 #include "lprintf.h"
 #include "w_wad.h"
@@ -43,16 +44,58 @@ typedef struct xdoom_event{
 
 static int I_TranslateKey(int key)
 {
-  int rc = key;
-  // Optional key translation stuff. Hope not needed as using PS2
+  int rc = 0;
+// Convert an ASCII char or special scan code into a Doom event_t.
+    switch (key)
+    {
+        // --- Arrow keys (non-ASCII, usually from scan codes) ---
+        case 0x34: rc = KEYD_LEFTARROW;  break;
+        case 0x36: rc = KEYD_RIGHTARROW; break;
+        case 0x38: rc = KEYD_UPARROW;    break;
+        case 0x32: rc = KEYD_DOWNARROW;  break;
 
+        // --- Control keys ---
+        case 0x1b: rc = KEYD_ESCAPE;    break; // ESC
+        case 0x0d: rc = KEYD_ENTER;     break; // Enter
+        case 0x09: rc = KEYD_TAB;       break; // Tab
+        case 0x7f: rc = KEYD_BACKSPACE; break; // Backspace
+        case 0x20: rc = KEYD_SPACEBAR;  break; // Space
+
+        // --- Function keys (scan codes, not ASCII) ---
+        case 0x80: rc = KEYD_F1;  break;
+        case 0x81: rc = KEYD_F2;  break;
+        case 0x82: rc = KEYD_F3;  break;
+        case 0x83: rc = KEYD_F4;  break;
+        case 0x84: rc = KEYD_F5;  break;
+        case 0x85: rc = KEYD_F6;  break;
+        case 0x86: rc = KEYD_F7;  break;
+        case 0x87: rc = KEYD_F8;  break;
+        case 0x88: rc = KEYD_F9;  break;
+        case 0x89: rc = KEYD_F10; break;
+
+        // --- Page / Home / Insert / Delete ---
+        case 0x95: rc = KEYD_PAGEUP;   break;
+        case 0x96: rc = KEYD_PAGEDOWN;   break;
+        case 0x97: rc = KEYD_HOME;   break;
+        case 0x98: rc = KEYD_END;    break;
+        case 0x99: rc = KEYD_INSERT;    break;
+        case 0x9a: rc = KEYD_DEL;    break;
+
+        // --- Default: printable ASCII maps directly ---
+        default:
+            rc = key;
+            break;
+    }
+
+  // printf("rc: 0x%x\n", rc);
   return rc;
-
 }
 
 static void I_GetEvent(xdoom_event *Event)
 {
   event_t event;
+
+  printf("I_GetEvent: %d 0x%x\n", Event->type, Event->key);
 
   switch (Event->type) {
   case SDL_KEYDOWN:
@@ -99,12 +142,17 @@ int X_PollEvent(xdoom_event *Event){
       modifier = chanend_in_byte(g_c_ps2);
       key = chanend_in_byte(g_c_ps2);
       unsigned ascii_key = ps2ASCII(modifier, key);
+      printf("key: 0x%x asciikey: 0x%x raw modifer: 0x%x\n", key, ascii_key, modifier);
       if (action == PS2_PRESS) {
-        printf("Modifiers 0x%02x press %d - %d (%c)\n", modifier, key, ascii_key, ascii_key);
+        Event->type = SDL_KEYDOWN;
+        // printf("Modifiers 0x%02x press %d - 0x%x (%c)\n", modifier, key, ascii_key, ascii_key);
       } else if (action == PS2_RELEASE) {
-        printf("Modifiers 0x%02x release %d - %d\n", modifier, key, ascii_key);
+        Event->type = SDL_KEYUP;
+        // printf("Modifiers 0x%02x release %d - 0x%x (%c)\n", modifier, key, ascii_key, ascii_key);
       }
+      Event->key = ascii_key;
     }
+    return 1;
     break;
   }
 
@@ -113,11 +161,10 @@ int X_PollEvent(xdoom_event *Event){
 
 void I_StartTic (void)
 {
-  printf("I_StartTic\n");
-
   xdoom_event Event;
-  while ( X_PollEvent(&Event) )
+  while ( X_PollEvent(&Event) ){
     I_GetEvent(&Event);
+  }
 
 }
 

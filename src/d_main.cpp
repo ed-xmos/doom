@@ -156,6 +156,7 @@ OVERLAY void D_PostEvent(event_t *ev)
   if (gametic < 3) return; 
   events[eventhead++] = *ev;
   eventhead &= MAXEVENTS-1;
+  printf("Event posted %d 0x%x\n", ev->type, ev->data1);
 }
 
 //
@@ -166,10 +167,13 @@ OVERLAY void D_PostEvent(event_t *ev)
 OVERLAY void D_ProcessEvents (void)
 {
   // IF STORE DEMO, DO NOT ACCEPT INPUT
-  if (gamemode != commercial || W_CheckNumForName("map01") >= 0)
-    for (; eventtail != eventhead; eventtail = (eventtail+1) & (MAXEVENTS-1))
-      if (!M_Responder(events+eventtail))
+  if (gamemode != commercial || W_CheckNumForName("map01") >= 0){
+    for (; eventtail != eventhead; eventtail = (eventtail+1) & (MAXEVENTS-1)){
+      if (!M_Responder(events+eventtail)){
         G_Responder(events+eventtail);
+      }
+    }
+  }
 }
 
 //
